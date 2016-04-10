@@ -1,0 +1,31 @@
+{% extends "backend.html" %}
+{% load staticfiles %}
+{% block title %}OpenGenfri > items{% endblock %}
+{% block backend-content %}
+<h3>User: {{server.username}}</h3>
+<section>
+    <h3>Menu</h3>
+    {% if items %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No items are available.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "backend.html" %}
+{% load staticfiles %}
+{% block title %}OpenGenfri > Bill #{{bill.id}}{% endblock %}
+{% block backend-content %}
+<ul>    
+    <li>Bill #{{bill.id}}</li>
+    <li>{{bill.date}}</li>
+    <li>Customer Name: {{bill.customer_name}}</li>
+    <li>Server: {{bill.server}}</li>
+    <li>Total: € {{bill.total}}</li>
+</ul>
+{% if bill.deleted_by == "" %}
+<div id="undo-button">
+<form method="post" name="">
+    {% csrf_token %}
+    <input type="submit" class="undo-bill" id="{{bill.id}}" value="Undo Bill" />
+</form>
+</div>
+{% endif %}
+<br/>
+<br/>
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Item</th>
+            <th>Units</th>
+            <th>Unit price</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for billitem in bill.billitem_set.all %}
+        <tr>
+            <td>{{billitem.item.category.name}}</td>
+            <td>{{billitem.item.name}}</td>
+            <td>x{{billitem.quantity}}</td>
+            <td class="nowrap">€ {{billitem.item_price}}</td>
+            <td>{{billitem.note}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script type="text/javascript" src="{% static "js/jquery-2.1.4.min.js" %}"></script>
+<script type="text/javascript" src="{% static "undobill-jquery.js" %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    var args = {
+        csrf_token: "{{ csrf_token }}",
+        url: "{% url 'webpos:undo-bill' %}",
+        hide: 'div'
+    };
+    $('.undo-bill').click(args, undo_bill);
+});
+</script>
+{% endblock %}
