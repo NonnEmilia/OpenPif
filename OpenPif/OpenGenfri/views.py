@@ -2,7 +2,7 @@ import json
 import re
 from decimal import Decimal
 from easy_pdf.rendering import render_to_pdf_response
-from django.shortcuts import render_to_response#, get_object_or_404
+from django.shortcuts import render_to_response  # , get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views import generic
@@ -17,6 +17,7 @@ from forms import ReportForm, SearchForm
 
 from django.template import RequestContext
 
+
 def index(request):
     """Testing view. If the request has an authenticated user token, the view
     returns a rendered page with all enabled items in the database and the
@@ -26,9 +27,10 @@ def index(request):
         display_items = Item.objects.filter(enabled=True)
         server = User.objects.get(pk=request.user.id)
         return render_to_response('webpos/index.html', {'items': display_items,
-                                                     'server': server})
+                                                        'server': server})
     else:
         return HttpResponseRedirect(reverse('login'))
+
 
 def order(request):
     if request.user.is_authenticated():
@@ -36,10 +38,10 @@ def order(request):
         items = Item.objects.filter(enabled=True).order_by('category',
                                                            'priority',
                                                            'name')
-        return render_to_response('webpos/order.html', {
-            'categories' : categories,
-            'items'      : items
-        })
+        return render_to_response('webpos/order.html',
+                                  {'categories': categories,
+                                   'items': items
+                                   })
     else:                                               # Daro: Lollo, ho
         return HttpResponseRedirect(reverse('login'))   # aggiunto questo caso
                                                         # per evitare di
@@ -52,6 +54,7 @@ def order(request):
 # OUTPUT JSON
 # {"item1": (quantity, price), ...}
 
+
 @csrf_protect
 def refresh_buttons(request):
     """
@@ -59,7 +62,7 @@ def refresh_buttons(request):
     quantities and prices of the displayed buttons first created by index view
     """
 
-    if request.method == 'POST':# and request.is_ajax():
+    if request.method == 'POST':  # and request.is_ajax():
         items = dict([(item.name, (item.quantity, item.price))
                       for item in Item.objects.filter(enabled=True)])
         return JsonResponse(items)
@@ -83,8 +86,7 @@ def refresh_buttons(request):
 # }
 
 @transaction.atomic
-@csrf_protect # Daro: sarebbe figoso integrare CSRF token in questa POST
-              # request
+@csrf_protect  # Daro: sarebbe figo integrare CSRF token in questa POST request
 def bill_handler(request):
     """Called in order to commit a bill. The POST request must pass a json
     object structured as:
@@ -116,14 +118,14 @@ def bill_handler(request):
     item as value. If such dictionary is not empty the bill cannot be committed
     and it should be modified and reposted.
     """
-    if request.method == 'POST':# and request.is_ajax():
+    if request.method == 'POST':  # and request.is_ajax():
         output = {'errors': [],
                   'bill_id': None,
                   'customer_id': '',
                   'date': None,
                   'total': 0,
                   'pdf_url': ''
-                 }
+                  }
         reqdata = json.loads(request.body)
         repdata, bill = dbmng.commit_bill(output, reqdata, request.user)
         if not repdata['errors']:
@@ -145,14 +147,16 @@ def pdf_view(request, bill_id):
             if cat.printable:
                 billitems[cat] = itemlist
             headeritems[cat] = itemlist
-    context = {'bill':bill, 'billitems':billitems, 'headeritems':headeritems}
+    context = {'bill': bill,
+               'billitems': billitems,
+               'headeritems': headeritems}
     return render_to_pdf_response(request, 'webpos/comanda.html', context)
 
 
 @transaction.atomic
 @csrf_protect
 def undo_bill(request):
-    if request.POST.has_key('billid'):
+    if 'bill_id' in request.POST:
         user = request.user
         billid = request.POST.get('billid', None)
         message = dbmng.undo_bill(billid, user)
@@ -176,9 +180,9 @@ def report(request, *args):
 
             if not qs.exists():
                 return render_to_response('webpos/report.html',
-                                      {'form': form,
-                                       #'report': None,
-                                       'qs_empty': True})
+                                          {'form': form,
+                                           # 'report': None,
+                                           'qs_empty': True})
             report_dict = {}
             for category in Category.objects.all():
                 report_dict[category] = {'itemss': {},
@@ -208,18 +212,18 @@ def report(request, *args):
                                        'report': report_dict,
                                        'total_earn': total_earn,
                                        'total_cash': total_cash,
-                                       #'qs_empty': False
+                                       # 'qs_empty': False
                                        })
         else:
             return render_to_response('webpos/report.html',
                                       {'form': 'Form Error!',
-                                       #'qs_empty': qs_empty
+                                       # 'qs_empty': qs_empty
                                        })
     else:
         form = ReportForm()
         return render_to_response('webpos/report.html',
                                   {'form': form,
-                                   #'qs_empty': qs_empty
+                                   # 'qs_empty': qs_empty
                                    })
 
 
@@ -265,4 +269,4 @@ def search(request, *args):
         return render_to_response('webpos/search.html',
                                   {'form': form,
                                    'qs_empty': qs_empty},
-                                   context_instance=RequestContext(request))
+                                  context_instance=RequestContext(request))

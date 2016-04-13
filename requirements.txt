@@ -1,4 +1,8 @@
-django>=1.8.1
-django-easy-pdf>=0.1.0
-xhtml2pdf>=0.0.6
-reportlab>=2.7,<3
+Django==1.9
+django-easy-pdf==0.1.0
+html5lib==0.9999999
+Pillow==3.2.0
+PyPDF2==1.25.1
+reportlab==2.7
+six==1.10.0
+xhtml2pdf==0.0.6
