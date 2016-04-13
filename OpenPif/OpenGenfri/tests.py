@@ -54,7 +54,8 @@ class BillTestCase(TestCase):
         billitems = billhd.billitem_set.filter(item__in=items)
 
         for itm in billitems:
-            self.assertEqual(itm.quantity, reqdata['items'][itm.item.name]['qty'])
+            self.assertEqual(itm.quantity,
+                             reqdata['items'][itm.item.name]['qty'])
             self.assertEqual(itm.item_price, itm.item.price)
 
         self.assertTrue(len(billitems) == 3)

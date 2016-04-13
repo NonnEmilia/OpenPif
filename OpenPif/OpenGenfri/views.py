@@ -33,7 +33,9 @@ def index(request):
 def order(request):
     if request.user.is_authenticated():
         categories = Category.objects.filter(enabled=True).order_by('priority')
-        items = Item.objects.filter(enabled=True).order_by('category','priority','name')
+        items = Item.objects.filter(enabled=True).order_by('category',
+                                                           'priority',
+                                                           'name')
         return render_to_response('webpos/order.html', {
             'categories' : categories,
             'items'      : items
@@ -52,8 +54,11 @@ def order(request):
 
 @csrf_protect
 def refresh_buttons(request):
-    """Tentative view that should be polled by the client in order to refresh
-    quantities and prices of the displayed buttons first created by index view"""
+    """
+    Tentative view that should be polled by the client in order to refresh
+    quantities and prices of the displayed buttons first created by index view
+    """
+
     if request.method == 'POST':# and request.is_ajax():
         items = dict([(item.name, (item.quantity, item.price))
                       for item in Item.objects.filter(enabled=True)])
@@ -176,16 +181,17 @@ def report(request, *args):
                                        'qs_empty': True})
             report_dict = {}
             for category in Category.objects.all():
-                report_dict[category] = {'itemss': {}, 'items_sold': 0, 'total_price': Decimal(0.00)}
+                report_dict[category] = {'itemss': {},
+                                         'items_sold': 0,
+                                         'total_price': Decimal(0.00)
+                                         }
                 for item in category.item_set.all():
-                    report_dict[category]['itemss'][item] = {'quantity': 0,
-                                                             'price': Decimal(0.00)}
-
+                    clear = {'quantity': 0, 'price': Decimal(0.00)}
+                    report_dict[category]['itemss'][item] = clear
             total_earn = Decimal(0)
             total_cash = Decimal(0)
             for bill in qs:
                 total_cash += bill.total
-
                 for billitem in bill.billitem_set.all():
                     quantity = billitem.quantity
                     price = billitem.total_cost
@@ -197,9 +203,6 @@ def report(request, *args):
                     entry_item['price'] += abs(price)
                     if price > 0:
                         total_earn += price
-
-
-
             return render_to_response('webpos/report.html',
                                       {'form': form,
                                        'report': report_dict,
@@ -247,13 +250,11 @@ def search(request, *args):
 
             if not qs.exists():
                 qs_empty = True
-
             return render_to_response('webpos/search.html',
                                       {'form': form,
                                        'qs_empty': qs_empty,
                                        'queryset': qs},
                                       context_instance=RequestContext(request))
-
         else:
             return render_to_response('webpos/search.html',
                                       {'form': form,
@@ -261,7 +262,7 @@ def search(request, *args):
                                       context_instance=RequestContext(request))
     else:
         form = SearchForm()
-        return render_to_response('webpos/search.html', {'form': form,
-                                                         'qs_empty': qs_empty},
-                                                         context_instance=RequestContext(request))
-
+        return render_to_response('webpos/search.html',
+                                  {'form': form,
+                                   'qs_empty': qs_empty},
+                                   context_instance=RequestContext(request))

@@ -17,8 +17,10 @@ class ReportForm(forms.Form):
     #                                       required=False)
     date_start = forms.SplitDateTimeField(required=False)
     date_end = forms.SplitDateTimeField(required=False)
-    # date_start = forms.DateField(widget=SelectDateWidget(), initial=datetime.date.today())
-    # date_end = forms.DateField(widget=SelectDateWidget(), initial=datetime.date.today())
+    # date_start = forms.DateField(widget=SelectDateWidget(),
+    #                              initial=datetime.date.today())
+    # date_end = forms.DateField(widget=SelectDateWidget(), 
+    #                            initial=datetime.date.today())
     # time_start = forms.ChoiceField(choices=TIME_CHOICES)
     # time_end = forms.ChoiceField(choices=TIME_CHOICES)
 

@@ -21,16 +21,21 @@ from django.views.generic.base import RedirectView, TemplateView
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='webpos/'), name='index'),  # Temporary
-    url(r'^webpos/', include('OpenGenfri.urls', namespace='webpos')),
+    url(r'^$', RedirectView.as_view(url='webpos/'),
+        name='index'),  # Temporary
+    url(r'^webpos/', include('OpenGenfri.urls',
+        namespace='webpos')),
     url(r'^admin/', admin.site.urls),
-    url(r'^login/$', login, {'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', logout, {'template_name': 'logout.html'}, name='logout'),
+    url(r'^login/$', login, {'template_name': 'login.html'},
+        name='login'),
+    url(r'^logout/$', logout, {'template_name': 'logout.html'},
+        name='logout'),
     url(r'^chpwd/$', password_change, {'template_name': 'change_pass.html',
                                        'post_change_redirect': 'success/'},
-                                      name='chpwd'),
-    url(r'^check/$', views.check, name='check'),
-
+        name='chpwd'),
+    url(r'^check/$', views.check,
+        name='check'),
     # Temporary, use a js alert or something instead
-    url(r'^chpwd/success/$', TemplateView.as_view(template_name='success.html')), 
+    url(r'^chpwd/success/$',
+        TemplateView.as_view(template_name='success.html')),
 ]
