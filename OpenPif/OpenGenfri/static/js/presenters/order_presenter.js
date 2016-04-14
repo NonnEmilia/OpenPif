@@ -1,30 +1,54 @@
 'use strict';
 
 /**
- * The presenter class. Stay in the middle between the model (store and AJAX calls) and the view (HTML DOM).
+ * The presenter class.
+ * The "P" of the {@link https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter|MVP pattern}.
+ * It stay in the middle between the model (store and AJAX calls) and the view (HTML DOM).
  * @class
  * @params {OrderModel} hModel
  * @params {PDFModel}   hPdfBill
  */
 function orderPresenter (hModel) {
     var hMod = hModel,
-        nUpdateLoop,
-        /** @type {HTMLElement} */
-        elMain              = document.getElementsByTagName('main')[0],
-        /** @type {HTMLElement} */
-        elAside             = document.getElementsByTagName('aside')[0],
-        /** @type {HTMLUListElement} */
-        elCategoryContainer = document.getElementsByClassName('categories')[0],
-        /** @type {HTMLUListElement} */
-        elProductsContainer = document.getElementsByClassName('products')[0],
-        /** @type {HTMLInputElement} */
-        elNameInput         = document.getElementsByClassName('customer-name')[0],
+        /** @type {Object} */
+        ref = {
+            /** @type {jQuery} */
+            $Main              : $('main'),
+            /** @type {jQuery} */
+            $Aside             : $('aside'),
+            /** @type {jQuery} */
+            $CategoryContainer : $('.categories'),
+            /** @type {jQuery} */
+            $ProductsContainer : $('.products'),
+            /** @type {jQuery} */
+            $NameInput         : $('.customer-name'),
+            /** @type {jQuery} */
+            $PrintBtn          : $('.btn-print-bill'),
+            /** @type {jQuery} */
+            $ItemNotes         : $('.item-notes'),// TODO: Check if used
+            /** @type {jQuery} */
+            $AlertBtn          : $('.btn-ok-alert'),
+            /** @type {jQuery} */
+            $BillTable         : $('.billItems'),
+            /** @type {jQuery} */
+            $BillTotal         : $('.billTotal'),
+            /** @type {jQuery} */
+            $AlertPanel        : $('.alert-panel'),
+            /** @type {jQuery} */
+            $AlertMessage      : $('.alert-message'),
+            /** @type {jQuery} */
+            $Mask              : $('.mask'),
+            /** @type {String} */
+            sTplBillCategory    : $('.billCategoryRow').html(),
+            /** @type {String} */
+            sTplBillItem        : $('.billItemRow').html(),
+            /** @type {String} */
+            sTplBillNotes       : $('billItemNotes').html(),
+            /** @type {String} */
+            sTplBillSeparator   : $('billSeparatorRow').html()
+        },
         /** @type {HTMLAnchorElement} */
         elPrintBtn          = document.getElementsByClassName('btn-print-bill')[0],
-        /** @type {HTMLTextAreaElement} */
-        elItemNotes         = document.getElementsByClassName('item-notes')[0],
-        /** @type {HTMLAnchorElement} */
-        elAlertBtn          = document.getElementsByClassName('btn-ok-alert')[0],
         /** @type {HTMLTableElement} */
         elBillTable         = document.getElementsByClassName('billItems')[0],
         /** @type {HTMLTableCellElement} */
@@ -42,26 +66,26 @@ function orderPresenter (hModel) {
         /** @type {String} */
         sTplBillNotes       = document.getElementsByClassName('billItemNotes')[0].innerHTML,
         /** @type {String} */
-        sTplBillSeparator   = document.getElementsByClassName('billSeparatorRow')[0].innerHTML;
+        sTplBillSeparator   = document.getElementsByClassName('billSeparatorRow')[0].innerHTML,
 
-    function addEventsListener(elNode, sTypes, fnListener) {
-        var aTypes = sTypes.split(' '),
-            lenTypes = aTypes.length,
-            i;
+        fnAttachEvents = function () {
+            hMod.on('addToBill', addToBill);
+            hMod.on('refreshButtons', refreshButtons);
 
-        for (i = 0; i < lenTypes; i++) {
-            elNode.addEventListener(aTypes[i], fnListener);
-        }
-    }
+            ref.$CategoryContainer.on('click touch', 'a', onClickBtnCategory);
+            ref.$ProductsContainer.on('click touch', onClickBtnProduct);
+            ref.$Aside.on('click touch', onClickMenu);
+            ref.$Aside.on('keyup', onKeyupMenu);
+            ref.$Main.on('dragstart', disableEvent);
+            ref.$AlertBtn.on('click touch', onClickBtnAlert);
+        };
 
     /**
      * @private
      */
     function onClickBtnCategory (evt) {
         evt.preventDefault();
-        if (evt.target.tagName === 'A') {
-            filterCategory(evt.target);
-        }
+        filterCategory(evt.target);
     }
 
     function onClickBtnProduct (evt) {
@@ -87,7 +111,7 @@ function orderPresenter (hModel) {
     function onKeyupMenu (evt) {
         evt.preventDefault();
         if (evt.target.tagName === 'INPUT') {
-            enablePrintButton(evt.target.value.length > 2);
+            ref.$PrintBtn.toggleClass('disabled', evt.target.value.length <= 2);
         } else if (evt.target.tagName === 'TEXTAREA') {
             addNotesToProduct(evt.target);
         }
@@ -124,43 +148,26 @@ function orderPresenter (hModel) {
     }
 
     /**
-     * Enable the "print bill" button.
-     * @param {Boolean} [bEnable=true] `false` to disable it.
-     */
-    function enablePrintButton (bEnable) {
-        if (bEnable === false) {
-            elPrintBtn.classList.add('disabled');
-        } else {
-            elPrintBtn.classList.remove('disabled');
-        }
-    }
-
-    /**
      * Filter articles via category button.
      * @param {HTMLAnchorElement} elCategoryBtn The category button.
      */
     function filterCategory (elCategoryBtn) {
-        var nId = parseInt(elCategoryBtn.dataset.id, 10),
-            aToFilterButtons = document.getElementsByClassName('products')[0].getElementsByClassName('category-' + nId),
-            aAllItemButtons = document.getElementsByClassName('products')[0].getElementsByTagName('li'),
-
-            fnResetCategoryButtons = function () {
-                var aAllCategoryButtons = document.getElementsByClassName('categories')[0].getElementsByTagName('a');
-                $.pif.forEach(aAllCategoryButtons, function (elBtn) {
-                    elBtn.classList.remove('filtered');
-                });
-            };
+        var $CategoryBtn = $(elCategoryBtn),
+            nId = parseInt($CategoryBtn.data('id'), 10),
+            $ToFilterButtons = $('.products .category-' + nId),
+            $AllItemButtons = $('.products li'),
+            $AllCategoryButtons = $('.categories a');
 
         // Remove filter
-        if (elCategoryBtn.classList.contains('filtered')) {
-            fnResetCategoryButtons();
-            $.pif.forEach(aAllItemButtons, $.pif.show);
+        if ($CategoryBtn.hasClass('filtered')) {
+            $AllCategoryButtons.removeClass('filtered');
+            $AllItemButtons.show();
         // Add filter
         } else {
-            fnResetCategoryButtons();
-            elCategoryBtn.classList.add('filtered');
-            $.pif.forEach(aAllItemButtons, $.pif.hide);
-            $.pif.forEach(aToFilterButtons, $.pif.show);
+            $AllCategoryButtons.removeClass('filtered');
+            $CategoryBtn.addClass('filtered');
+            $AllItemButtons.hide();
+            $ToFilterButtons.show();
         }
     }
 
@@ -377,7 +384,7 @@ function orderPresenter (hModel) {
                 }
             };
 
-        hMod.commitBill(elNameInput.value, fnAjaxSuccess, function () {
+        hMod.commitBill(ref.$NameInput.val(), fnAjaxSuccess, function () {
             showAlert("<p>Errore di comunicazione col server</p>Ritenta o chiama un tecnico");
         });
     }
@@ -388,13 +395,13 @@ function orderPresenter (hModel) {
 
     function getCategories () {
         var hCat = {};
-        $.pif.forEach(elCategoryContainer.children, function (elListItem) {
-            var elButton = elListItem.getElementsByTagName('A')[0],
-                nId = parseInt(elButton.dataset.id, 10);
+        ref.$CategoryContainer.children().each(function (idx, elListItem) {
+            var $Button = $('a', elListItem),
+                nId = parseInt($Button.data('id'), 10);
             hCat[nId] = {
                 id       : nId,
-                name     : elButton.innerHTML,
-                priority : parseInt(elButton.dataset.priority, 10)
+                name     : $Button.html(),
+                priority : parseInt($Button.data('priority'), 10)
             };
         });
 
@@ -411,34 +418,29 @@ function orderPresenter (hModel) {
         var sName,
             aValues,
             nQty,
+            $Button,
             elButton;
+
         for (sName in hItems) {
             aValues = hItems[sName];
             nQty = aValues[0];
-            elButton = document.querySelector("[data-name='" + sName +"']");
+            $Button = $("[data-name='" + sName +"']");
+            elButton = $Button.get(0);
             if (nQty !== null && nQty <= 5) {
-                elButton.classList.add('badge');
+                $Button.addClass('badge');
                 elButton.dataset.badge = nQty;
-                elButton.classList.toggle('disabled', nQty === 0);
+                $Button.toggleClass('disabled', nQty === 0);
             } else {
-                elButton.classList.remove('badge');
+                $Button.removeClass('badge');
                 delete elButton.dataset.badge
             }
         }
     }
 
-    hMod.on('addToBill', addToBill);
-    hMod.on('refreshButtons', refreshButtons);
-
-    addEventsListener(elCategoryContainer, 'click touch', onClickBtnCategory);
-    addEventsListener(elProductsContainer, 'click touch', onClickBtnProduct);
-    addEventsListener(elAside,             'click touch', onClickMenu);
-    addEventsListener(elAside,             'keyup',       onKeyupMenu);
-    addEventsListener(elMain,              'dragstart',   disableEvent);
-    addEventsListener(elAlertBtn,          'click touch', onClickBtnAlert);
+    fnAttachEvents();
 
     hMod.setCategories(getCategories());
-    nUpdateLoop = setUploadLoop();
+    setUploadLoop();
 }
 
 orderPresenter(new OrderModel());
