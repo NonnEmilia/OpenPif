@@ -29,24 +29,6 @@ function PiFQuery (hConfig) {
         }
     };
 
-    that.encodeQueryData = function (mParams) {
-        var aParams = [],
-            mKey;
-
-        if (typeof mParams === 'object') {
-            for (mKey in mParams) {
-                if (typeof mParams[mKey] === "object") {
-                    mParams[mKey] = JSON.stringify(mParams[mKey]);
-                }
-                aParams.push(encodeURIComponent(mKey) + "=" + encodeURIComponent(mParams[mKey]));
-            }
-        } else {
-            aParams.push(mParams);
-        }
-
-        return aParams.join("&");
-    };
-
     /**
      * @callback AjaxSuccess
      * @param {(Object|String)} response The response. If the response is a valid JSON returns an object.
@@ -58,58 +40,37 @@ function PiFQuery (hConfig) {
     /**
      * Utility to make AJAX call to server.
      *
-     * @param {Object}      hParams          The parameters to make the call.
-     * @param {String}      [hParams.url]    The url for the call.
-     * @param {String}      [hParams.method] The method. Should be "POST" or "GET".
-     * @param {AjaxSuccess} [fnSuccess]      The success callback function.
-     * @param {AjaxFailure} [fnFailure]      The failure callback function.
+     * @param {Object}      hParams              The parameters to make the call.
+     * @param {String}      [hParams.url='']     The url for the call.
+     * @param {String}      [hParams.method]     The method. Should be "POST" or "GET".
+     * @param               [hParams.params]     The parameters to send.
+     * @param {Boolean}     [hParams.async=true] An optional boolean parameter indicating whether or not to perform the operation asynchronously.
+     * @param {Number}      [hParams.timeout=0]  A value of 0 (which is the default) means there is no timeout.
+     * @param {AjaxSuccess} [fnSuccess]          The success callback function.
+     * @param {AjaxFailure} [fnFailure]          The failure callback function.
      */
     that.ajaxCall = function (hParams, fnSuccess, fnFailure) {
         hParams = hParams || {};
-        var hRequest    = new XMLHttpRequest(),
-            ajaxCfg     = that.config.ajax,
+        var ajaxCfg     = that.config.ajax,
             sUrl        = hParams.url    || ajaxCfg.url,
             sMethod     = hParams.method || ajaxCfg.method,
             bAsync      = hParams.async  || ajaxCfg.async,
             hCallParams = hParams.params || {},
-            sCallParams = that.encodeQueryData(hCallParams),
             nTimeout    = (hParams.timeout > 0) ? hParams.timeout : ajaxCfg.timeout;
-        if (!sUrl && sUrl !== '') {
-            throw new Error("No URL specified for the AJAX call!");
-        }
 
-        sUrl = sUrl + ((hParams.params && sMethod === 'GET') ? '?' + sCallParams : '');
-
-        hRequest.timeout = nTimeout;
-
-        hRequest.onreadystatechange = function () {
-            if (hRequest.readyState === 4) {
-                if (hRequest.status === 200) {
-                    if (fnSuccess) {
-                        var mResults;
-                        try {
-                            mResults = JSON.parse(hRequest.responseText);
-                        } catch (e) {
-                            mResults = hRequest.responseText;
-                        }
-                        fnSuccess(mResults);
-                    }
-                } else {
-                    if (fnFailure) {
-                        fnFailure(hRequest.status);
-                    }
-                }
-            }
-        };
-        hRequest.ontimeout = function () {
-            if (fnFailure) {
-                fnFailure();
-            }
-        };
-        hRequest.open(sMethod, sUrl, bAsync);
-        hRequest.setRequestHeader("HTTP_X_REQUESTED_WITH",'XMLHttpRequest');
-        hRequest.setRequestHeader("X-CSRFToken", that.getCookie('csrftoken'));
-        hRequest.send(sCallParams);
+        $.ajax({
+            url     : sUrl,
+            method  : sMethod,
+            timeout : nTimeout,
+            headers : {
+                //HTTP_X_REQUESTED_WITH : 'XMLHttpRequest',
+                "X-CSRFToken"         : that.getCookie('csrftoken')
+            },
+            async   : bAsync,
+            data    : hCallParams,
+            success : fnSuccess,
+            error   : fnFailure
+        });
     };
 
     that.getCookie = function (sKey) {
@@ -160,7 +121,7 @@ function PiFQuery (hConfig) {
 
     /**
      * Hide an HTML element.
-     * @param {HTMLElement} elNode
+     * @param {HTMLElement} elElement
      */
     that.hide = function (elElement) {
         elElement.style.display = 'none';
@@ -170,7 +131,7 @@ function PiFQuery (hConfig) {
 
     /**
      * Show an HTML element.
-     * @param {HTMLElement} elNode
+     * @param {HTMLElement} elElement
      */
     that.show = function (elElement) {
         //if (getComputedStyle(elElement).display === 'none') {
