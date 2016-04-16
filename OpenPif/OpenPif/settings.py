@@ -173,7 +173,7 @@ LOGGING = {
                 },
             },
         'loggers': {
-            'django': {
+            '': {
                 'handlers': [
                     'console',
                     'file_dev',
