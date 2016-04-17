@@ -143,22 +143,33 @@ LOGGING = {
                 '()': 'django.utils.log.RequireDebugTrue'
                 },
             },
+	'formatters': {
+		'verbose': {
+			'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        	},
+        	'simple': {
+            		'format': '%(levelname)s %(message)s'
+        	},
+    	},
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'filters': ['require_debug_true'],
+                'formatter': 'simple',
                 'class': 'logging.StreamHandler',
                 },
             'file_dev': {
                 'level': 'DEBUG',
                 'filters': ['require_debug_true'],
                 'class': 'logging.FileHandler',
+                'formatter': 'verbose',
                 'filename': BASE_LOGDIR + 'devel.log',
                 },
             'file_prod': {
                 'level': 'WARNING',
                 'filters': ['require_debug_false'],
                 'class': 'logging.FileHandler',
+                'formatter': 'verbose',
                 'filename': BASE_LOGDIR + 'production.log',
                 },
             'db': {
