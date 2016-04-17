@@ -18,13 +18,13 @@ from forms import ReportForm, SearchForm
 from django.template import RequestContext
 import logging
 
+logger = logging.getLogger(__name__)
 
 def index(request):
     """Testing view. If the request has an authenticated user token, the view
     returns a rendered page with all enabled items in the database and the
     username of the currently logged user. If the user is not authenticated it
     redirects to the login page."""
-    logger = logging.getLogger(__name__)
     if request.user.is_authenticated():
         logger.info(
                 "User " + request.user.get_username() + " authenticated fine"
