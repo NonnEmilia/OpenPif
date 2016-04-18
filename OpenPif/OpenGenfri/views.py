@@ -16,7 +16,9 @@ from . import dbmanager as dbmng
 from forms import ReportForm, SearchForm
 
 from django.template import RequestContext
+import logging
 
+logger = logging.getLogger(__name__)
 
 def index(request):
     """Testing view. If the request has an authenticated user token, the view
@@ -24,11 +26,15 @@ def index(request):
     username of the currently logged user. If the user is not authenticated it
     redirects to the login page."""
     if request.user.is_authenticated():
+        logger.info(
+                "User " + request.user.get_username() + " authenticated fine"
+                )
         display_items = Item.objects.filter(enabled=True)
         server = User.objects.get(pk=request.user.id)
         return render_to_response('webpos/index.html', {'items': display_items,
                                                         'server': server})
     else:
+        logger.info("Anonymous user, redirecting")
         return HttpResponseRedirect(reverse('login'))
 
 

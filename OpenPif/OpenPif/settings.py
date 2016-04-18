@@ -129,3 +129,76 @@ STATIC_ROOT = BASE_DIR + '/static/'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
+#Logging section
+
+BASE_LOGDIR = os.path.join(BASE_DIR,'logs/')
+LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+                },
+            'require_debug_true': {
+                '()': 'django.utils.log.RequireDebugTrue'
+                },
+            },
+	'formatters': {
+		'verbose': {
+			'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        	},
+        	'simple': {
+            		'format': '%(levelname)s %(message)s'
+        	},
+    	},
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'filters': ['require_debug_true'],
+                'formatter': 'simple',
+                'class': 'logging.StreamHandler',
+                },
+            'file_dev': {
+                'level': 'DEBUG',
+                'filters': ['require_debug_true'],
+                'class': 'logging.FileHandler',
+                'formatter': 'verbose',
+                'filename': BASE_LOGDIR + 'devel.log',
+                },
+            'file_prod': {
+                'level': 'WARNING',
+                'filters': ['require_debug_false'],
+                'class': 'logging.FileHandler',
+                'formatter': 'verbose',
+                'filename': BASE_LOGDIR + 'production.log',
+                },
+            'db': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': BASE_LOGDIR + 'database.log',
+                },
+            'mail_admins': {
+                'level': 'ERROR',
+                'filters': ['require_debug_false'],
+                'class': 'django.utils.log.AdminEmailHandler',
+                },
+            },
+        'loggers': {
+            '': {
+                'handlers': [
+                    'console',
+                    'file_dev',
+                    'file_prod',
+                    'mail_admins'],
+                'level': 'DEBUG',
+                'propagate': True,
+                },
+            'transactions': {
+                'handlers': [
+                    'console',
+                    'db'],
+                'level': 'DEBUG',
+                'propagate': True,
+                },
+            },
+        }
