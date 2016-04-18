@@ -30,7 +30,7 @@
                 <ul class="products buttons">
                     {% for item in items %}
                         <li class="category-{{ item.category.id }}" data-name="{{ item.name }}">
-                        <a href="#" data-id="{{ item.id }}" data-price="{{ item.price }}" data-category="{{ item.category.id }}">{{ item.name }}</a>
+                        <a href="#" data-id="{{ item.id }}" data-price="{{ item.price|stringformat:"g" }}" data-category="{{ item.category.id }}">{{ item.name }}</a>
                         </li>
                     {% endfor %}
                 </ul>
