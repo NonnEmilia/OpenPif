@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from log_handlers import mk_log_folder_handler
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -129,9 +130,10 @@ STATIC_ROOT = BASE_DIR + '/static/'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
-#Logging section
 
-BASE_LOGDIR = os.path.join(BASE_DIR,'logs/')
+# Logging
+
+BASE_LOGDIR = os.path.join(BASE_DIR, 'logs')
 LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -143,14 +145,14 @@ LOGGING = {
                 '()': 'django.utils.log.RequireDebugTrue'
                 },
             },
-	'formatters': {
-		'verbose': {
-			'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        	},
-        	'simple': {
-            		'format': '%(levelname)s %(message)s'
-        	},
-    	},
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
         'handlers': {
             'console': {
                 'level': 'INFO',
@@ -161,22 +163,34 @@ LOGGING = {
             'file_dev': {
                 'level': 'DEBUG',
                 'filters': ['require_debug_true'],
-                'class': 'logging.FileHandler',
                 'formatter': 'verbose',
-                'filename': BASE_LOGDIR + 'devel.log',
+                '()': mk_log_folder_handler,
+                'folder': BASE_LOGDIR,
+                'filename': os.path.join(BASE_LOGDIR, 'devel.log'),
+                'logging_class': 'logging.handlers.RotatingFileHandler',
+                'maxBytes': 1024,
+                'backupCount': 10,
                 },
             'file_prod': {
                 'level': 'WARNING',
                 'filters': ['require_debug_false'],
-                'class': 'logging.FileHandler',
                 'formatter': 'verbose',
-                'filename': BASE_LOGDIR + 'production.log',
+                '()': mk_log_folder_handler,
+                'folder': BASE_LOGDIR,
+                'filename': os.path.join(BASE_LOGDIR, 'production.log'),
+                'logging_class': 'logging.handlers.RotatingFileHandler',
+                'maxBytes': 1024,
+                'backupCount': 10,
                 },
             'db': {
                 'level': 'INFO',
-                'class': 'logging.FileHandler',
-                'filename': BASE_LOGDIR + 'database.log',
-                },
+                '()': mk_log_folder_handler,
+                'folder': BASE_LOGDIR,
+                'filename': os.path.join(BASE_LOGDIR, 'database.log'),
+                'logging_class': 'logging.handlers.RotatingFileHandler',
+                'maxBytes': 1024,
+                'backupCount': 10,
+               },
             'mail_admins': {
                 'level': 'ERROR',
                 'filters': ['require_debug_false'],
