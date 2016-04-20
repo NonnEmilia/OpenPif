@@ -10,8 +10,8 @@ Requirements
 ------------
 - Python (2.7)
 - Django (1.9)
-- django-easy-pdf (0.1+)
-- xhtml2pdf (0.0.6+)
+- django-easy-pdf (0.1.0)
+- xhtml2pdf (0.0.6)
 - reportlab (2.7)
 
 Installation

@@ -18,7 +18,9 @@ from forms import ReportForm, SearchForm
 from django.template import RequestContext
 import logging
 
+
 logger = logging.getLogger(__name__)
+
 
 def index(request):
     """Testing view. If the request has an authenticated user token, the view

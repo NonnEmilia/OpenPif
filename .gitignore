@@ -3,3 +3,4 @@
 .sass-cache
 *.swp
 *.log
+*.log.[0-9]*
