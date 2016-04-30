@@ -2,7 +2,7 @@ import json
 import re
 from decimal import Decimal
 from easy_pdf.rendering import render_to_pdf_response
-from django.shortcuts import render_to_response  # , get_object_or_404
+from django.shortcuts import render_to_response, render  # , get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views import generic
@@ -33,8 +33,9 @@ def index(request):
                 )
         display_items = Item.objects.filter(enabled=True)
         server = User.objects.get(pk=request.user.id)
-        return render_to_response('webpos/index.html', {'items': display_items,
-                                                        'server': server})
+        return render(request, 'webpos/index.html', {'items': display_items,
+                                                     'server': server
+                                                     })
     else:
         logger.info("Anonymous user, redirecting")
         return HttpResponseRedirect(reverse('login'))
@@ -46,10 +47,10 @@ def order(request):
         items = Item.objects.filter(enabled=True).order_by('category',
                                                            'priority',
                                                            'name')
-        return render_to_response('webpos/order.html',
-                                  {'categories': categories,
-                                   'items': items
-                                   })
+        return render(request, 'webpos/order.html',
+                      {'categories': categories,
+                       'items': items
+                       })
     else:                                               # Daro: Lollo, ho
         return HttpResponseRedirect(reverse('login'))   # aggiunto questo caso
                                                         # per evitare di
@@ -215,24 +216,24 @@ def report(request, *args):
                     entry_item['price'] += abs(price)
                     if price > 0:
                         total_earn += price
-            return render_to_response('webpos/report.html',
-                                      {'form': form,
-                                       'report': report_dict,
-                                       'total_earn': total_earn,
-                                       'total_cash': total_cash,
-                                       # 'qs_empty': False
-                                       })
+            return render(request, 'webpos/report.html',
+                          {'form': form,
+                           'report': report_dict,
+                           'total_earn': total_earn,
+                           'total_cash': total_cash,
+                           # 'qs_empty': False
+                           })
         else:
-            return render_to_response('webpos/report.html',
-                                      {'form': 'Form Error!',
-                                       # 'qs_empty': qs_empty
-                                       })
+            return render(request, 'webpos/report.html',
+                          {'form': 'Form Error!',
+                           # 'qs_empty': qs_empty
+                           })
     else:
         form = ReportForm()
-        return render_to_response('webpos/report.html',
-                                  {'form': form,
-                                   # 'qs_empty': qs_empty
-                                   })
+        return render(request, 'webpos/report.html',
+                      {'form': form,
+                       # 'qs_empty': qs_empty
+                       })
 
 
 class BillDetailView(generic.DetailView):
@@ -262,19 +263,19 @@ def search(request, *args):
 
             if not qs.exists():
                 qs_empty = True
-            return render_to_response('webpos/search.html',
-                                      {'form': form,
-                                       'qs_empty': qs_empty,
-                                       'queryset': qs},
-                                      context_instance=RequestContext(request))
+            return render(request, 'webpos/search.html',
+                          {'form': form,
+                           'qs_empty': qs_empty,
+                           'queryset': qs
+                           })
         else:
-            return render_to_response('webpos/search.html',
-                                      {'form': form,
-                                       'qs_empty': qs_empty},
-                                      context_instance=RequestContext(request))
+            return render(request, 'webpos/search.html',
+                          {'form': form,
+                           'qs_empty': qs_empty
+                           })
     else:
         form = SearchForm()
-        return render_to_response('webpos/search.html',
-                                  {'form': form,
-                                   'qs_empty': qs_empty},
-                                  context_instance=RequestContext(request))
+        return render(request, 'webpos/search.html',
+                      {'form': form,
+                       'qs_empty': qs_empty
+                       })
