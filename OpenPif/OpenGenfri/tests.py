@@ -48,8 +48,7 @@ class BillTestCase(TestCase):
                    }
         }
         user = User.objects.get(username='Lonfo')
-        result = commit_bill(self.output, reqdata, user)
-        billhd = Bill.objects.get(pk=self.output['bill_id'])
+        result, billhd = commit_bill(self.output, reqdata, user)
         items = Item.objects.filter(name__in=reqdata['items'].keys())
         billitems = billhd.billitem_set.filter(item__in=items)
 
@@ -83,7 +82,7 @@ class BillTestCase(TestCase):
                    }
         }
         user = User.objects.get(username='Lonfo')
-        result = commit_bill(self.output, reqdata, user)
+        result, billhd = commit_bill(self.output, reqdata, user)
 
         self.assertTrue(len(result['errors']) == 2)
         self.assertTrue(result['errors']['Acqua'] == 5)
