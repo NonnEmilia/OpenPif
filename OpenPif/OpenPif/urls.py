@@ -33,8 +33,8 @@ urlpatterns = [
     url(r'^chpwd/$', password_change, {'template_name': 'change_pass.html',
                                        'post_change_redirect': 'success/'},
         name='chpwd'),
-    url(r'^check/$', views.check,
-        name='check'),
+    url(r'^status/$', views.status,
+        name='status'),
     # Temporary, use a js alert or something instead
     url(r'^chpwd/success/$',
         TemplateView.as_view(template_name='success.html')),

@@ -1,10 +1,10 @@
 from django.http import HttpResponse
 from OpenGenfri.models import Category
 
-def check(request):
+def status(request):
     try:
         qs = Category.objects.all()
         list(qs)
-        return HttpResponse("OK")
+        return HttpResponse(status=204)
     except Exception:
-        return HttpResponse("NO")
+        return HttpResponse(status=500)
