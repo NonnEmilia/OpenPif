@@ -2,7 +2,7 @@ import json
 import re
 from decimal import Decimal
 from easy_pdf.rendering import render_to_pdf_response
-from django.shortcuts import render_to_response, render  # , get_object_or_404
+from django.shortcuts import render  # , get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views import generic
@@ -165,12 +165,14 @@ def pdf_view(request, bill_id):
 @transaction.atomic
 @csrf_protect
 def undo_bill(request):
-    if 'bill_id' in request.POST:
+    if 'billid' in request.POST:
         user = request.user
         billid = request.POST.get('billid', None)
         message = dbmng.undo_bill(billid, user)
         context = {'message': message}
         return JsonResponse(context)
+    else:
+        return HttpResponse('ERROR: billid not int request.POST')
 
 
 def report(request, *args):
