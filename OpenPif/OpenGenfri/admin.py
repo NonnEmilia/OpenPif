@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Item, Category, Bill, BillItem, Location
+from models import Item, Category, Bill, BillItem, BillItemExtra, Location
 
 def make_enabled(modeladmin, request, queryset):
     queryset.update(enabled=True)
@@ -18,7 +18,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('name', 'price', 'is_available', 'quantity', 'category',
                     'priority', 'enabled')
     search_fields = ['name', 'id']
-    list_filter = ['category', 'enabled', 'quantity']
+    list_filter = ['category', 'enabled']
     actions = [make_enabled, make_disabled]
 
 
@@ -45,6 +45,22 @@ class LocationAdmin(admin.ModelAdmin):
 class BillItemInline(admin.StackedInline):
     model = BillItem
     extra = 1
+    show_change_link = True
+
+
+class BillItemExtraInline(admin.TabularInline):
+    model = BillItemExtra
+    extra = 1
+
+
+class BillItemAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['bill', 'item', 'quantity', 'item_price',
+                           'category', 'note']}),
+    ]
+    inlines = [BillItemExtraInline]
+    list_display = ('item', 'quantity', 'bill')
+    list_filter = ['bill']
 
 
 class BillAdmin(admin.ModelAdmin):
@@ -62,5 +78,5 @@ admin.site.register(Item, ItemAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(Bill, BillAdmin)
-
+admin.site.register(BillItem, BillItemAdmin)
 

@@ -34,9 +34,10 @@ class Category(models.Model):
 # ...)
 
 class Item(models.Model):
-    id = models.AutoField(primary_key=True) #check if ID is useful
+    id = models.AutoField(primary_key=True)  # check if ID is useful
     name = models.CharField(max_length=30, unique=True)
-    category = models.ForeignKey('Category')
+    category = models.ForeignKey('Category', null=True,
+                                 on_delete=models.SET_NULL)
     quantity = models.PositiveSmallIntegerField(null=True, blank=True)
     priority = models.PositiveSmallIntegerField(default=10)
     enabled = models.BooleanField(default=True)
@@ -79,12 +80,25 @@ class Bill(models.Model):
 
 class BillItem(models.Model):
     id = models.AutoField(primary_key=True)
-    bill = models.ForeignKey('Bill')
-    item = models.ForeignKey('Item')
-    category = models.ForeignKey('Category', null=True)
+    bill = models.ForeignKey('Bill', on_delete=models.CASCADE)
+    item = models.ForeignKey('Item', on_delete=models.DO_NOTHING)
+    category = models.ForeignKey('Category', null=True,
+                                 on_delete=models.SET_NULL)
     quantity = models.PositiveSmallIntegerField()
     item_price = models.DecimalField(max_digits=12, decimal_places=2)
     note = models.CharField(max_length=200, blank=True)
+
+    @property
+    def total_cost(self):
+        return self.quantity * self.item_price
+
+
+class BillItemExtra(models.Model):
+    id = models.AutoField(primary_key=True)
+    billitem = models.ForeignKey('BillItem', on_delete=models.CASCADE)
+    item = models.ForeignKey('Item', on_delete=models.DO_NOTHING)
+    quantity = models.PositiveSmallIntegerField()
+    item_price = models.DecimalField(max_digits=12, decimal_places=2)
 
     @property
     def total_cost(self):

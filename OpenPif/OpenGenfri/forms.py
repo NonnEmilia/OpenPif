@@ -23,7 +23,6 @@ class ReportForm(forms.Form):
     #                            initial=datetime.date.today())
     # time_start = forms.ChoiceField(choices=TIME_CHOICES)
     # time_end = forms.ChoiceField(choices=TIME_CHOICES)
-
 ### DateTimeField formats
 #
 # ['%Y-%m-%d %H:%M:%S',    # '2006-10-25 14:30:59'
