@@ -196,10 +196,10 @@ def report(request, *args):
                 qs = qs.filter(date__lte=date_end)
 
             if not qs.exists():
-                return render_to_response('webpos/report.html',
-                                          {'form': form,
-                                           # 'report': None,
-                                           'qs_empty': True})
+                return render(request, 'webpos/report.html',
+                              {'form': form,
+                               # 'report': None,
+                               'qs_empty': True})
             report_dict = {}
             for category in Category.objects.all():
                 report_dict[category] = {'itemss': {},
