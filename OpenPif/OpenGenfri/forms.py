@@ -2,6 +2,7 @@ import datetime
 from django import forms
 from models import Category
 from django.forms.extras.widgets import SelectDateWidget
+from widgets import SplitDateTimeHTML5Widget
 
 # TIME_CHOICES = (
 #         ('00', '00'),
@@ -15,8 +16,10 @@ class ReportForm(forms.Form):
     # sel_category = forms.ModelChoiceField(queryset=Category.objects.all(),
     #                                       empty_label='All',
     #                                       required=False)
-    date_start = forms.SplitDateTimeField(required=False)
-    date_end = forms.SplitDateTimeField(required=False)
+    date_start = forms.SplitDateTimeField(required=False,
+            widget=SplitDateTimeHTML5Widget)
+    date_end = forms.SplitDateTimeField(required=False,
+            widget=SplitDateTimeHTML5Widget)
     # date_start = forms.DateField(widget=SelectDateWidget(),
     #                              initial=datetime.date.today())
     # date_end = forms.DateField(widget=SelectDateWidget(), 
