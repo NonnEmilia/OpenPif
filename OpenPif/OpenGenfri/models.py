@@ -19,7 +19,7 @@ class Location(models.Model):
 class Category(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30, unique=True)
-   # location = models.ForeignKey('Location')
+    # location = models.ForeignKey('Location')
     priority = models.PositiveSmallIntegerField(default=10)
     enabled = models.BooleanField(default=True)
     printable = models.BooleanField(default=True)
@@ -42,6 +42,7 @@ class Item(models.Model):
     priority = models.PositiveSmallIntegerField(default=10)
     enabled = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    extra = models.BooleanField(default=False, verbose_name='Aggiunta')
 
     def is_available(self):
         return self.quantity is not 0

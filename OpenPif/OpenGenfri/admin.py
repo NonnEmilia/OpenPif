@@ -12,21 +12,25 @@ make_disabled.short_description = "Disabilita items selezionati"
 
 class ItemAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['name', 'category', 'quantity', 'priority',
+        (None, {'fields': ['name', 'category', 'extra', 'quantity', 'priority',
                            'price', 'enabled']}),
     ]
     list_display = ('name', 'price', 'is_available', 'quantity', 'category',
-                    'priority', 'enabled')
+                    'extra_verbose', 'priority', 'enabled')
     search_fields = ['name', 'id']
-    list_filter = ['category', 'enabled']
+    list_filter = ['category', 'enabled', 'extra']
     actions = [make_enabled, make_disabled]
+
+    def extra_verbose(self, obj):
+        return 'Si' if obj.extra else 'No'
+    extra_verbose.short_description = 'Aggiunta'
 
 
 class CategoryAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['name', 'priority', 'enabled','printable']}),
+        (None, {'fields': ['name', 'priority', 'enabled', 'printable']}),
     ]
-    list_display = ('name', 'priority', 'enabled','printable')
+    list_display = ('name', 'priority', 'enabled', 'printable')
     search_fields = ['name']
     list_filter = ['enabled']
     actions = [make_enabled, make_disabled]
