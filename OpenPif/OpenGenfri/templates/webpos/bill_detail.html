@@ -38,6 +38,15 @@
             <td class="nowrap">€ {{billitem.item_price}}</td>
             <td>{{billitem.note}}</td>
         </tr>
+            {% for billitemextra in billitem.billitemextra_set.all %}
+            <tr>
+                <td>{{billitemextra.item.category.name}}</td>
+                <td>+ {{billitemextra.item.name}}</td>
+                <td>x{{billitemextra.quantity}}</td>
+                <td class="nowrap">€ {{billitemextra.item_price}}</td>
+                <td>{{billitemextra.note}}</td>
+            </tr> 
+            {% endfor %}
         {% endfor %}
     </tbody>
 </table>

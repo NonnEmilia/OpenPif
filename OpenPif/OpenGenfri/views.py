@@ -94,21 +94,27 @@ def refresh_buttons(request):
 #   "total": total
 # }
 
-@transaction.atomic
+# @transaction.atomic  (using select_for_update() in dbmanager)
 @csrf_protect  # Daro: sarebbe figo integrare CSRF token in questa POST request
 def bill_handler(request):
     """Called in order to commit a bill. The POST request must pass a json
     object structured as:
 
-         { "customer_name": customer_name,
+         { "customer_name": "tizio",
            "items": {
                 "item1": {
-                    "qty": quantity1,
-                    "notes": "note1"
-                }
+                    "qty": 2,
+                    "notes": "note1",
+                    "extras": {
+                        "extra_item1": {
+                            "qty": 1,
+                        }
+                    }
+                },
                 "item2": {
-                    "qty": quantity2,
-                    "notes": "note2"
+                    "qty": 3,
+                    "notes": "note2",
+                    "extras": {}
                 }
             }
          }
@@ -190,10 +196,10 @@ def report(request, *args):
                 qs = qs.filter(date__lte=date_end)
 
             if not qs.exists():
-                return render_to_response('webpos/report.html',
-                                          {'form': form,
-                                           # 'report': None,
-                                           'qs_empty': True})
+                return render(request, 'webpos/report.html',
+                              {'form': form,
+                               # 'report': None,
+                               'qs_empty': True})
             report_dict = {}
             for category in Category.objects.all():
                 report_dict[category] = {'itemss': {},
