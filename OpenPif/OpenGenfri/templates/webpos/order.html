@@ -2,8 +2,8 @@
 {% load staticfiles %}
 {% block head %}
     <script type="text/css" src="{% static "css/foundation.min.css" %}"></script>
-    <link href="{% static "css/screen.css" %}" media="screen, projection" rel="stylesheet" type="text/css" />
-    <link href="{% static "css/fontello.css" %}" media="all" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/screen.css" %}" media="screen, projection" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/fontello.css" %}" media="all" rel="stylesheet" type="text/css"/>
 {% endblock %}
 {% block title %}OpenGenfri > order{% endblock %}
 {% block content %}
@@ -21,23 +21,41 @@
             <article>
                 <ul class="categories buttons">
                     {% for cat in categories %}
-                        <li class="category-{{ cat.id }}">
-                        <a href="#" data-id="{{ cat.id }}" data-priority="{{ cat.priority }}">{{ cat.name }}</a>
+                        <li class="button category-{{ cat.id }}">
+                            <a class="big-btn" href="#" data-id="{{ cat.id }}"
+                               data-priority="{{ cat.priority }}">{{ cat.name }}</a>
                         </li>
                     {% endfor %}
                 </ul>
                 <hr/>
                 <ul class="products buttons">
                     {% for item in items %}
-                        <li class="category-{{ item.category.id }}" data-name="{{ item.name }}">
-                        <a href="#" data-id="{{ item.id }}" data-price="{{ item.price|stringformat:"g" }}" data-category="{{ item.category.id }}">{{ item.name }}</a>
+                        <li class="button category-{{ item.category.id }}" data-name="{{ item.name }}">
+                            <a class="big-btn" href="#" data-id="{{ item.id }}"
+                               data-price="{{ item.price|stringformat:"g" }}"
+                               data-category="{{ item.category.id }}">{{ item.name }}</a>
+                            {% if item.extras %}
+                                <div class="extra-btn">+
+                                    <ul class="extra-list">
+                                        {% for extra in item.extras %}
+                                            <li>
+                                                <a href="#" data-id="{{ extra.id }}"
+                                                   data-price="{{ extra.price|stringformat:"g" }}">
+                                                    {{ extra.name }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
             </article>
             <aside>
                 <div class="user-form">
-                    <input class="customer-name" type="text" name="username" autocomplete="off" placeholder="Nome cliente" maxlength="40" />
+                    <input class="customer-name" type="text" name="username" autocomplete="off"
+                           placeholder="Nome cliente" maxlength="40"/>
                 </div>
                 <a href="#" class="btn-print-bill icon-print disabled"></a>
                 <table cellpadding="0" cellspacing="0" class="billItems">
@@ -63,7 +81,7 @@
                     </template>
                     <template class="billSeparatorRow">
                         <td colspan="4">
-                            <hr />
+                            <hr/>
                         </td>
                     </template>
                 </table>

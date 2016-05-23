@@ -44,19 +44,17 @@ def index(request):
 def order(request):
     if request.user.is_authenticated():
         categories = Category.objects.filter(enabled=True).order_by('priority')
-        items = Item.objects.filter(enabled=True).order_by('category',
-                                                           'priority',
-                                                           'name')
-        return render(request, 'webpos/order.html',
-                      {'categories': categories,
-                       'items': items
-                       })
-    else:                                               # Daro: Lollo, ho
-        return HttpResponseRedirect(reverse('login'))   # aggiunto questo caso
-                                                        # per evitare di
-                                                        # ritornare NULL in
-                                                        # caso di utente non
-                                                        # autenticato.
+        items = Item.objects.filter(enabled=True, extra=False).order_by('category',
+                                                                        'priority',
+                                                                        'name')
+        for item in items:
+            item.extras = item.category.item_set.filter(extra=True)
+
+        return render(request, 'webpos/order.html', {'categories': categories,
+                                                     'items': items
+                                                     })
+    else:
+        return HttpResponseRedirect(reverse('login'))
 
 ### AJAX REFRESH
 

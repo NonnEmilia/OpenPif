@@ -190,7 +190,7 @@ main footer {
   padding: 0;
   margin: 0;
 }
-.buttons li {
+.buttons .button {
   -moz-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
@@ -205,11 +205,12 @@ main footer {
   -webkit-justify-content: center;
   justify-content: center;
   height: 70px;
-}
-.buttons li.badge {
   position: relative;
 }
-.buttons li.badge[data-badge]:after {
+.buttons .button.badge {
+  position: relative;
+}
+.buttons .button.badge[data-badge]:after {
   content: attr(data-badge);
   position: absolute;
   top: -3px;
@@ -226,14 +227,15 @@ main footer {
   -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
 }
-.buttons li.disabled {
+.buttons .button.disabled {
   background-color: gray;
 }
-.buttons li.disabled a {
+.buttons .button.disabled a {
   -webkit-filter: blur(1px);
   filter: blur(1px);
 }
-.buttons li a {
+
+.big-btn {
   display: block;
   width: 126px;
   word-wrap: break-word;
@@ -241,8 +243,52 @@ main footer {
   padding: 10px 5px;
 }
 
-.products {
-  overflow: auto;
+.extra-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #ddd;
+  color: #111111;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.extra-btn:hover .extra-list {
+  display: block;
+}
+
+.extra-list {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 0;
+  background-color: #ddd;
+  -moz-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  list-style: none;
+  font-size: 0.8em;
+  width: 136px;
+  margin: 0;
+  text-align: right;
+  padding: 0;
+  z-index: 5;
+}
+.extra-list li {
+  padding: 2px 0;
+  background-color: transparent;
+  -moz-transition: background-color 200ms;
+  -o-transition: background-color 200ms;
+  -webkit-transition: background-color 200ms;
+  transition: background-color 200ms;
+}
+.extra-list li:hover {
+  background-color: #ccc;
+}
+.extra-list a {
+  color: #111111;
+  padding: 5px;
 }
 
 .pizza, .category-5 {
