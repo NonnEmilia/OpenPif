@@ -140,7 +140,12 @@ def bill_handler(request):
                   'pdf_url': ''
                   }
         reqdata = json.loads(request.body)
-        repdata, bill = dbmng.commit_bill(output, reqdata, request.user)
+        try:
+            repdata, bill = dbmng.commit_bill(output, reqdata, request.user)
+        except dbmng.FormatError as e:
+            error_msg = 'Wrong request JSON formatting: {}'.format(e)
+            logger.error('{} - Request BODY: {}'.format(error_msg, request.body))
+            return HttpResponse(error_msg)
         if not repdata['errors']:
             repdata['pdf_url'] = reverse('webpos:pdf-bill', args=[bill.id])
         return JsonResponse(repdata)
@@ -176,7 +181,9 @@ def undo_bill(request):
         context = {'message': message}
         return JsonResponse(context)
     else:
-        return HttpResponse('ERROR: billid not int request.POST')
+        error_msg = 'ERROR: billid not int request.POST'
+        logger.error('{} - Request BODY: {}'.format(error_msg, request.body))
+        return HttpResponse(error_msg)
 
 
 def report(request, *args):

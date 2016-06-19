@@ -2,6 +2,10 @@ from django.contrib.auth.models import User
 from models import Item, Bill, BillItem, BillItemExtra
 
 
+class FormatError(Exception):
+    pass
+
+
 def undo_bill(billid, user):
     bill = Bill.objects.get(pk=billid)
     if not bill.is_committed():
@@ -23,32 +27,35 @@ def commit_bill(output, reqdata, user):
     errors = []
     to_commit_billitems = []
     to_commit_extras = []
-    items = _get_items(reqdata)
-    bill = Bill(customer_name=reqdata['customer_name'],
-                server=User.objects.get(pk=user.id).username,
-                customer_id=output['customer_id'], total=0)
-    for r_billitem in reqdata['items']:
-        r_data = reqdata['items'][r_billitem]
-        item = items[r_billitem]
-        billitem, ok = _create_item(r_data, BillItem, item)
-        if ok:
-            bill.total += billitem.item_price * billitem.quantity
-            billitem.bill = bill
-            billitem.category = billitem.item.category
-            billitem.note = r_data['notes']
-            to_commit_billitems.append(billitem)
-        else:
-            errors.append((billitem.item.name, billitem.item.quantity))
-        for r_extra in r_data['extras']:
-            r_data = reqdata['items'][r_billitem]['extras'][r_extra]
-            item = items[r_extra]
-            extra, ok = _create_item(r_data, BillItemExtra, item)
+    try:
+        items = _get_items(reqdata)
+        bill = Bill(customer_name=reqdata['customer_name'],
+                    server=User.objects.get(pk=user.id).username,
+                    customer_id=output['customer_id'], total=0)
+        for r_billitem in reqdata['items']:
+            r_data = reqdata['items'][r_billitem]
+            item = items[r_billitem]
+            billitem, ok = _create_item(r_data, BillItem, item)
             if ok:
-                bill.total += extra.item_price * extra.quantity
-                extra.billitem = billitem
-                to_commit_extras.append(extra)
+                bill.total += billitem.item_price * billitem.quantity
+                billitem.bill = bill
+                billitem.category = billitem.item.category
+                billitem.note = r_data['notes']
+                to_commit_billitems.append(billitem)
             else:
-                errors.append((extra.item.name, extra.item.quantity))
+                errors.append((billitem.item.name, billitem.item.quantity))
+            for r_extra in r_data['extras']:
+                r_data = reqdata['items'][r_billitem]['extras'][r_extra]
+                item = items[r_extra]
+                extra, ok = _create_item(r_data, BillItemExtra, item)
+                if ok:
+                    bill.total += extra.item_price * extra.quantity
+                    extra.billitem = billitem
+                    to_commit_extras.append(extra)
+                else:
+                    errors.append((extra.item.name, extra.item.quantity))
+    except KeyError as e:
+        raise FormatError('Missing key: {}'.format(str(e)))
     if errors:
         output['total'] = 0
         output['customer_id'] = None
