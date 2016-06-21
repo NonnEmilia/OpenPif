@@ -146,7 +146,9 @@ def bill_handler(request):
             repdata, bill = dbmng.commit_bill(output, reqdata, request.user)
         except dbmng.FormatError as e:
             error_msg = 'Wrong request JSON formatting: {}'.format(e)
-            logger.error('{} - Request BODY: {}'.format(error_msg, request.body))
+            logger.error('{} - Request BODY: {}'.format(
+                error_msg,
+                request.body))
             return HttpResponse(error_msg)
         if not repdata['errors']:
             repdata['pdf_url'] = reverse('webpos:pdf-bill', args=[bill.id])
@@ -196,11 +198,14 @@ def report(request, *args):
         if form.is_valid():
             date_start = form.cleaned_data['date_start']
             date_end = form.cleaned_data['date_end']
+            sel_server = form.cleaned_data['sel_server']
             qs = Bill.objects.filter(deleted_by='')
             if date_start:
                 qs = qs.filter(date__gte=date_start)
             if date_end:
                 qs = qs.filter(date__lte=date_end)
+            if sel_server:
+                qs = qs.filter(server__in=[s for s in sel_server])
 
             if not qs.exists():
                 return render(request, 'webpos/report.html',
