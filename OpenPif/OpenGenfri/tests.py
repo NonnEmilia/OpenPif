@@ -25,6 +25,8 @@ class BillTestCase(TestCase):
                                     quantity=5, price=5.00)
         peperoni = Item.objects.create(name='Peperoni', category=aggiunte,
                                        quantity=10, price=0.50)
+        acciughe = Item.objects.create(name='Acciughe', category=aggiunte,
+                                       quantity=10, price=1.50)
         pasta = Item.objects.create(name='Pasta al ragu', category=piatti,
                                     quantity=3, price=8.50)
         acqua = Item.objects.create(name='Acqua', category=bibite, quantity=5,
@@ -50,35 +52,44 @@ class BillTestCase(TestCase):
 
     def test_commit_bill_success(self):
         reqdata = {'customer_name': 'Darozzo',
-                   'items': {
-                       'Coca Cola': {
-                           'qty': 2,
-                           'notes': '',
-                           'extras': {},
+                   'items': [
+                       {'name': 'Coca Cola',
+                        'qty': 2,
+                        'notes': '',
+                        'extras': {},
                        },
-                       'Pasta al ragu': {
-                           'qty': 3,
-                           'notes': 'Scotta',
-                           'extras': {},
+                       {'name': 'Pasta al ragu',
+                        'qty': 3,
+                        'notes': 'Scotta',
+                        'extras': {},
                        },
-                       'Acqua': {
-                            'qty': 1,
-                            'notes': 'Fredda',
-                            'extras': {},
-                        },
-                       'Pizza Margherita': {
-                            'qty': 1,
-                            'notes': 'Fredda',
-                            'extras': {
-                                'Peperoni': {
-                                    'qty': 1,
-                                    }
-                                },
-                           }
+                       {'name': 'Acqua',
+                        'qty': 1,
+                        'notes': 'Fredda',
+                        'extras': {},
+                       },
+                       {'name': 'Pizza Margherita',
+                        'qty': 1,
+                        'notes': 'Fredda',
+                        'extras': {
+                            'Peperoni': {
+                                'qty': 1,
+                            }
+                         },
+                       },
+                       {'name': 'Pizza Margherita',
+                        'qty': 1,
+                        'notes': 'Fredda',
+                        'extras': {
+                            'Acciughe': {
+                                'qty': 1,
+                            }
+                         },
+                       }
+                    ]
                    }
-        }
         result, billhd = commit_bill(self.output, reqdata, self.lonfo)
-        billitems = billhd.billitem_set.filter(item__name__in=reqdata['items'].keys())
+        billitems = billhd.billitem_set.filter(item__name__in=[item['name'] for item in reqdata['items']])
         billitems_all = billhd.billitem_set.all()
         self.assertEqual(len(billitems), len(billitems_all))
         for bitm1, bitm2 in zip(billitems, billitems_all):
@@ -87,52 +98,50 @@ class BillTestCase(TestCase):
                                       bitm2.billitemextra_set.all()):
                 self.assertEqual(extra1.item.name, extra2.item.name)
 
-        for itm in billitems:
-            self.assertEqual(itm.quantity,
-                             reqdata['items'][itm.item.name]['qty'])
-            self.assertEqual(itm.item_price, itm.item.price)
-            for extra in itm.billitemextra_set.all():
-                self.assertEqual(extra.quantity,
-                                 reqdata['items'][itm.item.name]['extras'][extra.item.name]['qty'])
-                self.assertEqual(extra.item_price, extra.item.price)
-
-        self.assertEqual(len(billitems), 4)
+        self.assertEqual(len(billitems_all), 5)
+        self.assertEqual(len(billitems), 5)
+        self.assertEqual(Item.objects.get(name='Pizza Margherita').quantity, 3)
+        self.assertEqual(Item.objects.get(name='Acciughe').quantity, 9)
+        self.assertEqual(Item.objects.get(name='Peperoni').quantity, 9)
+        self.assertEqual(Item.objects.get(name='Coca Cola').quantity, 9)
+        self.assertEqual(Item.objects.get(name='Pasta al ragu').quantity, 0)
+        self.assertEqual(Item.objects.get(name='Acqua').quantity, 4)
         self.assertEqual(billhd.customer_name, 'Darozzo')
         self.assertEqual(billhd.server, 'Lonfo')
         self.assertEqual(result['errors'], {})
         self.assertEqual(result['customer_id'], 'LOL')
-        self.assertEqual(result['total'], 39)
+        self.assertEqual(result['total'], 45.5)
 
     def test_commit_bill_failure(self):
         reqdata = {'customer_name': 'Darozzo',
-                   'items': {
-                       'Coca Cola': {
-                           'qty': 2,
-                           'notes': '',
-                           'extras': {},
+                   'items': [
+                       {'name': 'Coca Cola',
+                        'qty': 2,
+                        'notes': '',
+                        'extras': {},
                        },
-                       'Pasta al ragu': {
-                           'qty': 4,
-                           'notes': 'Scotta',
-                           'extras': {},
+                       {'name': 'Pasta al ragu',
+                        'qty': 4,
+                        'notes': 'Scotta',
+                        'extras': {},
                        },
-                       'Acqua': {
-                            'qty': 6,
-                            'notes': 'Fredda',
-                            'extras': {},
+                       {'name': 'Acqua',
+                        'qty': 6,
+                        'notes': 'Fredda',
+                        'extras': {},
                        },
-                       'Pizza Margherita': {
-                            'qty': 6,
-                            'notes': 'Fredda',
-                            'extras': {
-                                'Peperoni': {
-                                    'qty': 11,
-                                    }
-                            },
+                       {'name': 'Pizza Margherita',
+                        'qty': 6,
+                        'notes': 'Fredda',
+                        'extras': {
+                            'Peperoni': {
+                                'qty': 11,
+                            }
+                        },
 
                        },
-                   }
-        }
+                   ]
+                  }
         result, billhd = commit_bill(self.output, reqdata, self.lonfo)
         self.assertTrue(len(result['errors']) == 4)
         self.assertTrue(result['errors']['Acqua'] == 5)

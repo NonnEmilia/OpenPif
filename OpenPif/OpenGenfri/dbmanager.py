@@ -33,19 +33,20 @@ def commit_bill(output, reqdata, user):
                     server=User.objects.get(pk=user.id).username,
                     customer_id=output['customer_id'], total=0)
         for r_billitem in reqdata['items']:
-            r_data = reqdata['items'][r_billitem]
-            item = items[r_billitem]
-            billitem, ok = _create_item(r_data, BillItem, item)
+            # r_data = reqdata['items'][r_billitem]
+            # print r_billitem['name']
+            item = items[r_billitem['name']]
+            billitem, ok = _create_item(r_billitem, BillItem, item)
             if ok:
                 bill.total += billitem.item_price * billitem.quantity
                 billitem.bill = bill
                 billitem.category = billitem.item.category
-                billitem.note = r_data['notes']
+                billitem.note = r_billitem['notes']
                 to_commit_billitems.append(billitem)
             else:
                 errors.append((billitem.item.name, billitem.item.quantity))
-            for r_extra in r_data['extras']:
-                r_data = reqdata['items'][r_billitem]['extras'][r_extra]
+            for r_extra in r_billitem['extras']:
+                r_data = r_billitem['extras'][r_extra]
                 item = items[r_extra]
                 extra, ok = _create_item(r_data, BillItemExtra, item)
                 if ok:
@@ -75,8 +76,9 @@ def commit_bill(output, reqdata, user):
 def _get_items(reqdata):
     items = {}
     for r_billitem in reqdata['items']:
-        items[r_billitem] = None
-        for r_extra in reqdata['items'][r_billitem]['extras']:
+        # print r_billitem
+        items[r_billitem['name']] = None
+        for r_extra in r_billitem['extras']:
             items[r_extra] = None
     db_items = Item.objects.select_for_update().filter(name__in=items.keys())
     for db_item in db_items:
