@@ -50,8 +50,11 @@ def order(request):
         for item in items:
             item.extras = item.category.item_set.filter(extra=True)
 
+        extras = Item.objects.filter(extra=True)
+
         return render(request, 'webpos/order.html', {'categories': categories,
-                                                     'items': items
+                                                     'items': items,
+                                                     'extras': extras
                                                      })
     else:
         return HttpResponseRedirect(reverse('login'))

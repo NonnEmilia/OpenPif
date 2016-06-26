@@ -3,9 +3,9 @@
  * @class
  */
 function OrderModel () {
-    var that = riot.observable(this),
-        /** @type {Object} The store. An object formatted as { id_item : { "category" : id_category, "id" : id_item, "name" : "item_name", "price" : item_price, "qty" : item_ordered_qty, "notes" : item_notes } } */
-        hStore = {},
+    var that        = riot.observable(this),
+        /** @type {Object[]} The store. An object formatted as { id_item : { "category" : id_category, "id" : id_item, "name" : "item_name", "price" : item_price, "qty" : item_ordered_qty, "notes" : item_notes } } */
+        aStore      = [],
         /** @type {Object} The categories object formatted as { id_number : { "id" : number, "name" : string, "priority" : number } */
         hCategories = {};
 
@@ -19,57 +19,137 @@ function OrderModel () {
      * @param {Number} hProd.qty      The ordered quantity.
      * @param {Number} hProd.price    The product price.
      * @param {String} hProd.notes    The product notes.
+     * @param {Object} hProd.extras The product extras. Each has ID and quantity.
      */
     that.addProduct = function (hProd) {
-        var hStoreProd = hStore[hProd.id];
+        // var hStoredProd = aStore[hProd.id];
+        var hStoredProd = that.findProduct(hProd);
 
         // Insert product into the store.
-        if (!hStoreProd) {
-            hStoreProd = hStore[hProd.id] = hProd;
+        if (!hStoredProd) {
+            hStoredProd = $.extend({}, hProd);
+            aStore.push(hStoredProd);
         } else {
-            hStoreProd.qty += hProd.qty;
+            aStore[hStoredProd.idx].qty += hProd.qty;
         }
-        hStoreProd.rowTotal = calculateRowTotal(hStoreProd);
+        hStoredProd.rowTotal = calculateRowTotal(hStoredProd);
 
         triggerAddToBill();
     };
 
     /**
-     * Increment quantity of a product.
-     * @param {Object} hProd     The product data.
-     * @param {Number} hProd.id  The product ID.
-     * @param {Number} hProd.qty The product quantity to add.
+     * Find a specified product in the store.
+     *
+     * @param {Object} hProd The product.
+     *
+     * @returns {Object|undefined} A product if exists, otherwise undefined. The product will have the new key `idx`
+     *                             with its position within the array to find it easily.
      */
-    that.incrementProduct = function (hProd) {
-        var hStoreProd = hStore[hProd.id];
+    that.findProduct = function (hProd) {
+        var hStoredProduct    = undefined,
+            nProdExtrasLength = 0;
+
+        if (hProd.hasOwnProperty("extras") && typeof hProd.extras === "object") {
+            nProdExtrasLength = $.pif.objectLength(hProd.extras);
+        }
+
+        $.each(aStore, function (nIdProduct, hProduct) {
+            var nStoredExtrasLength = 0;
+
+            if (hProduct.hasOwnProperty("extras") && typeof hProduct.extras === "object") {
+                nStoredExtrasLength = $.pif.objectLength(hProduct.extras);
+            }
+
+            if (hProduct.id === hProd.id && nStoredExtrasLength === nProdExtrasLength) {
+                var nMatchedExtra = 0;
+
+                $.each(hProduct.extras, function (nIdExtra, hExtra) {
+                    $.each(hProd.extras, function (nIdExt, hProdExtra) {
+                        if (hExtra.id === hProdExtra.id) {
+                            nMatchedExtra += 1;
+                        }
+                    });
+                });
+
+                // Same ID and same extras -> found!
+                if (nMatchedExtra === nStoredExtrasLength) {
+                    hStoredProduct = $.extend({}, hProduct);
+                    hStoredProduct.idx = nIdProduct;// The array position to find it
+                    return true;
+                }
+            }
+        });
+
+        return hStoredProduct;
+    };
+
+    /**
+     * Increment quantity of a product.
+     * @param {Object} hProd The product data.
+     * @param {Number} nQty  The quantity to add.
+     */
+    that.incrementProduct = function (hProd, nQty) {
+        var hStoreProd = that.findProduct(hProd);
 
         // Increment product already in the store
         if (hStoreProd) {
-            hStoreProd.qty += hProd.qty;
+            hStoreProd.qty += nQty;
             hStoreProd.rowTotal = calculateRowTotal(hStoreProd);
+            aStore[hStoreProd.idx] = hStoreProd;
             triggerAddToBill();
         }
     };
 
     /**
      * Decrement quantity of a product.
-     * @param {Object} hProd     The product data.
-     * @param {Number} hProd.id  The product ID.
-     * @param {Number} hProd.qty The product quantity to subtract.
+     * @param {Object} hProd The product data.
+     * @param {Number} nQty  The quantity to subtract.
      */
-    that.decrementProduct = function (hProd) {
-        var hStoreProd = hStore[hProd.id];
+    that.decrementProduct = function (hProd, nQty) {
+        var hStoreProd = that.findProduct(hProd);
 
         // Decrement product already in the store. If the only delete it.
         if (hStoreProd) {
-            if (hStoreProd.qty > 1) {
-                hStoreProd.qty -= hProd.qty;
+            var nFinalQty = hStoreProd.qty - nQty;
+            if (nFinalQty > 0) {
+                hStoreProd.qty = nFinalQty;
                 hStoreProd.rowTotal = calculateRowTotal(hStoreProd);
+                aStore[hStoreProd.idx] = hStoreProd;
             } else {
-                deleteProduct(hProd.id);
+                deleteProduct(hStoreProd.idx);
             }
             triggerAddToBill();
         }
+    };
+
+    /**
+     * Add an extra to a product.
+     * @param {Object} hProd        The product data.
+     * @param {Number} hProd.id     The product ID.
+     * @param {String} hProd.notes  The product notes.
+     * @param {Object} hExtra       The extra data.
+     * @param {Number} hExtra.id    The extra ID.
+     * @param {Number} hExtra.name  The extra name.
+     * @param {Number} hExtra.price The extra price.
+     */
+    that.addExtraToProduct = function (hProd, hExtra) {
+        var hStoreProd = that.findProduct(hProd);
+
+        if (hStoreProd) {
+            hStoreProd.extras[hExtra.name] = hExtra;
+        }
+
+        triggerAddToBill();
+    };
+
+    that.removeExtraToProduct = function (hProd, hExtra) {
+        var hStoreProd = that.findProduct(hProd);
+
+        if (hStoreProd) {
+            delete hStoreProd.extras[hExtra.name];
+        }
+
+        triggerAddToBill();
     };
 
     /**
@@ -79,7 +159,8 @@ function OrderModel () {
      * @param {String} hProd.notes The product notes.
      */
     that.addNotesToProduct = function (hProd) {
-        var hStoreProd = hStore[hProd.id];
+        // var hStoreProd = aStore[hProd.id];
+        var hStoreProd = that.findProduct(hProd);
 
         // Add notes to a product already in the store
         if (hStoreProd) {
@@ -92,15 +173,21 @@ function OrderModel () {
      * @param {Object} hProd The product data.
      */
     function calculateRowTotal (hProd) {
-        return hProd.qty * hProd.price;
+        var fExtraPrices = 0;
+
+        $.each(hProd.extras, function (sName, hExtra) {
+            fExtraPrices += hExtra.price;
+        });
+
+        return hProd.qty * (hProd.price + fExtraPrices);
     }
 
     /**
      * Delete a product from the store.
-     * @param {Number} nId The product ID.
+     * @param {Number} nIdx The product position.
      */
-    function deleteProduct (nId) {
-        delete hStore[nId];
+    function deleteProduct (nIdx) {
+        aStore.splice(nIdx, 1);
     }
 
     /**
@@ -114,8 +201,8 @@ function OrderModel () {
          * @property {Number} total The bill total amount.
          */
         that.trigger('addToBill', {
-            items : hStore,
-            total : calculateTotal(hStore)
+            items : aStore,
+            total : calculateTotal(aStore)
         });
     }
 
@@ -132,21 +219,21 @@ function OrderModel () {
      * @returns {Number} The total amount.
      */
     that.getTotal = function () {
-        return calculateTotal(hStore);
+        return calculateTotal(aStore);
     };
 
     /**
      * Calculate the total amount.
-     * @param {Object} hStore The store.
-     * @returns {Number} The total amount.
+     * @param {Object[]} aStore The store.
+     * @returns {Number} The total amount. The minimum amount is 0.
      */
-    function calculateTotal (hStore) {
-        var nId,
-            nTotal = 0;
+    function calculateTotal (aStore) {
+        var nTotal = 0;
 
-        for (nId in hStore) {
-            nTotal += hStore[nId].qty * hStore[nId].price;
-        }
+        $.each(aStore, function (nIdx, hProduct) {
+            // nTotal += hProduct.qty * hProduct.price;
+            nTotal += calculateRowTotal(hProduct);
+        });
 
         return nTotal < 0 ? 0 : nTotal;
     }
@@ -156,16 +243,11 @@ function OrderModel () {
      * @returns {Boolean}
      */
     that.billIsEmpty = function () {
-        var nId,
-            nCounter = 0;
-        for (nId in hStore) {
-            nCounter++;
-        }
-        return nCounter === 0;
+        return aStore.length === 0;
     };
 
     that.getBill = function () {
-        return hStore;
+        return aStore;
     };
 
     /**
@@ -175,20 +257,22 @@ function OrderModel () {
      * @param {AjaxFailure} fnFailure     The failure callback.
      */
     that.commitBill = function (sCustomerName, fnSuccess, fnFailure) {
-        var nId,
-            hData = {
-                customer_name : sCustomerName,
-                items         : {}
-            };
+        var hData = {
+            customer_name : sCustomerName,
+            items         : []
+        };
 
-        for (nId in hStore) {
-            hData.items[hStore[nId].name] = {
-                qty   : hStore[nId].qty,
-                notes : hStore[nId].notes
-            };
-        }
+        $.each(aStore, function (nIdx, hProduct) {
+            hData.items.push({
+                name   : hProduct.name,
+                qty    : hProduct.qty,
+                notes  : hProduct.notes,
+                extras : hProduct.extras
+            });
+        });
+
         $.pif.ajaxCall({
-            url : '/webpos/commit/',
+            url    : '/webpos/commit/',
             params : JSON.stringify(hData)
         }, fnSuccess, fnFailure);
     };

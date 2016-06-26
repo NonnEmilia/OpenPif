@@ -120,33 +120,6 @@ main aside .edit {
   width: 53px;
   text-align: right;
 }
-main aside .edit a {
-  font-size: 22px;
-  width: 20px;
-  display: inline-block;
-  display: -webkit-inline-flex;
-  display: inline-flex;
-  -webkit-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
-  justify-content: center;
-  -moz-transition: color 200ms;
-  -o-transition: color 200ms;
-  -webkit-transition: color 200ms;
-  transition: color 200ms;
-}
-main aside .edit a.add {
-  color: #308030;
-}
-main aside .edit a.remove {
-  color: #FC3030;
-}
-main aside .edit a:active {
-  color: #262626;
-}
-main aside .edit a:before {
-  margin-left: 3px;
-}
 main aside .total {
   font-size: 1.5em;
   text-transform: uppercase;
@@ -176,6 +149,35 @@ main footer {
   text-align: center;
   vertical-align: bottom;
   height: 10px;
+}
+
+.pif-button {
+  font-size: 22px;
+  width: 20px;
+  display: inline-block;
+  color: grey;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -moz-transition: color 200ms;
+  -o-transition: color 200ms;
+  -webkit-transition: color 200ms;
+  transition: color 200ms;
+}
+.pif-button.add {
+  color: #308030;
+}
+.pif-button.remove {
+  color: #FC3030;
+}
+.pif-button:active {
+  color: #0f0f0f;
+}
+.pif-button:before {
+  margin-left: 3px;
 }
 
 #logo {
@@ -243,7 +245,13 @@ main footer {
   padding: 10px 5px;
 }
 
+.extra-label {
+  display: none;
+  white-space: nowrap;
+}
+
 .extra-btn {
+  display: none;
   position: absolute;
   bottom: 0;
   right: 0;

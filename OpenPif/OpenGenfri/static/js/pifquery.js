@@ -100,47 +100,24 @@ function PiFQuery (hConfig) {
         return parseFloat(fValue).toFixed(nDecimals).replace('.', ',');
     };
 
-    /**
-     * Execute a for cycle over an iterable object (array, collection, ...).
-     * @param {(Object|Array)} mArray
-     * @param {Function}       fnCallback
-     */
-    that.forEach = function (mArray, fnCallback) {
-        if (mArray && mArray.prototype && mArray.prototype.forEach) {
-            mArray.forEach(function (mElement) {
-                fnCallback(mElement);
-            })
+    that.objectLength = function (hObject) {
+        if (typeof hObject !== "object") {
+            throw new TypeError(hObject + " is not an object");
+        }
+
+        var nLength = 0,
+            mKey;
+
+        // Polyfill for Object.keys()
+        if (Object.hasOwnProperty("keys")) {
+            nLength = Object.keys(hObject).length;
         } else {
-            var nLen = mArray.length,
-                i;
-            for (i = 0; i < nLen; i++) {
-                fnCallback(mArray[i]);
+            for (mKey in hObject) {
+                nLength += 1;
             }
         }
-    };
 
-    /**
-     * Hide an HTML element.
-     * @param {HTMLElement} elElement
-     */
-    that.hide = function (elElement) {
-        elElement.style.display = 'none';
-        elElement.style.visibility = 'hidden';
-        elElement.classList.add('hidden');
-    };
-
-    /**
-     * Show an HTML element.
-     * @param {HTMLElement} elElement
-     */
-    that.show = function (elElement) {
-        //if (getComputedStyle(elElement).display === 'none') {
-        //    elElement.style.display = 'block';
-        //} else {
-            elElement.style.display = '';
-        //}
-        elElement.style.visibility = 'visible';
-        elElement.classList.remove('hidden');
+        return nLength;
     }
 }
 

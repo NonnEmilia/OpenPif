@@ -3,7 +3,7 @@
 {% block head %}
     <script type="text/css" src="{% static "css/foundation.min.css" %}"></script>
     <link href="{% static "css/screen.css" %}" media="screen, projection" rel="stylesheet" type="text/css"/>
-    <link href="{% static "css/fontello.css" %}" media="all" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/pif-icons.css" %}" media="all" rel="stylesheet" type="text/css"/>
 {% endblock %}
 {% block title %}OpenGenfri > order{% endblock %}
 {% block content %}
@@ -30,7 +30,8 @@
                 <hr/>
                 <ul class="products buttons">
                     {% for item in items %}
-                        <li class="button category-{{ item.category.id }}" data-name="{{ item.name }}">
+                        <li class="button category-{{ item.category.id }}" data-name="{{ item.name }}"
+                            data-id="{{ item.id }}">
                             <a class="big-btn" href="#" data-id="{{ item.id }}"
                                data-price="{{ item.price|stringformat:"g" }}"
                                data-category="{{ item.category.id }}">{{ item.name }}</a>
@@ -66,17 +67,28 @@
                     </template>
                     <template class="billItemRow">
                         <td class="edit">
-                            <a data-id="{ id }" class="remove icon-minus-circled" href="#"></a>
-                            <a data-id="{ id }" class="add icon-plus-circled" href="#"></a>
+                            <a data-id="{ id }" class="pif-button remove icon-minus-circled" href="#"></a>
+                            <a data-id="{ id }" class="pif-button add icon-plus-circled" href="#"></a>
                         </td>
                         <td class="amount">{ amount }x</td>
                         <td class="item">{ name }</td>
                         <td class="price">{ price } &euro;</td>
                     </template>
+                    <template class="billItemExtras">
+                        <td></td>
+                        <td colspan="3">
+                            {% for extra in extras %}
+                                <label class="extra-label extra-category-{{ extra.category.id }}">
+                                    <input class="extra-input" type="checkbox" name="{{ item.id }}" value="{{ extra.id }}"
+                                           data-price="{{ extra.price|stringformat:"g" }}">{{ extra.name }}</label>
+                            {% endfor %}
+                        </td>
+                    </template>
                     <template class="billItemNotes">
                         <td></td>
                         <td class="notes" colspan="3">
-                            <textarea class="item-notes" data-id="{ id }" maxlength="200">{ notes }</textarea>
+                            <textarea class="item-notes" data-id="{ id }" maxlength="200"
+                                      title="Note">{ notes }</textarea>
                         </td>
                     </template>
                     <template class="billSeparatorRow">

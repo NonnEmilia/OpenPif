@@ -151,27 +151,6 @@ main {
         .edit {
             width: 53px;
             text-align: right;
-            a {
-                font-size: 22px;
-                width: 20px;
-                display: inline-block;
-                @include display-flex(inline-flex);
-                @include align-items(center);
-                @include justify-content(center);
-                @include single-transition(color, 200ms);
-                &.add {
-                    color: #308030;
-                }
-                &.remove {
-                    color: #FC3030;
-                }
-                &:active {
-                    color: shade($pap_grey, 60);
-                }
-                &:before {
-                    margin-left: 3px;
-                }
-            }
         }
         .total {
             font-size: 1.5em;
@@ -200,6 +179,29 @@ main {
         text-align: center;
         vertical-align: bottom;
         height: 10px; //85px;
+    }
+}
+
+.pif-button {
+    font-size: 22px;
+    width: 20px;
+    display: inline-block;
+    color: $gray;
+    @include display-flex(inline-flex);
+    @include align-items(center);
+    @include justify-content(center);
+    @include single-transition(color, 200ms);
+    &.add {
+        color: #308030;
+    }
+    &.remove {
+        color: #FC3030;
+    }
+    &:active {
+        color: shade($color_shark_approx, 60);
+    }
+    &:before {
+        margin-left: 3px;
     }
 }
 
@@ -268,7 +270,13 @@ main {
     }
 }
 
+.extra-label {
+    display: none;
+    white-space: nowrap;
+}
+
 .extra-btn {
+    display: none;// Changed! No more needed... TODO: Delete
     position: absolute;
     bottom: 0;
     right: 0;
