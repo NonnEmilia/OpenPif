@@ -120,33 +120,6 @@ main aside .edit {
   width: 53px;
   text-align: right;
 }
-main aside .edit a {
-  font-size: 22px;
-  width: 20px;
-  display: inline-block;
-  display: -webkit-inline-flex;
-  display: inline-flex;
-  -webkit-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
-  justify-content: center;
-  -moz-transition: color 200ms;
-  -o-transition: color 200ms;
-  -webkit-transition: color 200ms;
-  transition: color 200ms;
-}
-main aside .edit a.add {
-  color: #308030;
-}
-main aside .edit a.remove {
-  color: #FC3030;
-}
-main aside .edit a:active {
-  color: #262626;
-}
-main aside .edit a:before {
-  margin-left: 3px;
-}
 main aside .total {
   font-size: 1.5em;
   text-transform: uppercase;
@@ -178,6 +151,35 @@ main footer {
   height: 10px;
 }
 
+.pif-button {
+  font-size: 22px;
+  width: 20px;
+  display: inline-block;
+  color: grey;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -moz-transition: color 200ms;
+  -o-transition: color 200ms;
+  -webkit-transition: color 200ms;
+  transition: color 200ms;
+}
+.pif-button.add {
+  color: #308030;
+}
+.pif-button.remove {
+  color: #FC3030;
+}
+.pif-button:active {
+  color: #0f0f0f;
+}
+.pif-button:before {
+  margin-left: 3px;
+}
+
 #logo {
   float: left;
   padding: 5px;
@@ -190,7 +192,7 @@ main footer {
   padding: 0;
   margin: 0;
 }
-.buttons li {
+.buttons .button {
   -moz-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
@@ -205,11 +207,12 @@ main footer {
   -webkit-justify-content: center;
   justify-content: center;
   height: 70px;
-}
-.buttons li.badge {
   position: relative;
 }
-.buttons li.badge[data-badge]:after {
+.buttons .button.badge {
+  position: relative;
+}
+.buttons .button.badge[data-badge]:after {
   content: attr(data-badge);
   position: absolute;
   top: -3px;
@@ -226,14 +229,15 @@ main footer {
   -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
   box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
 }
-.buttons li.disabled {
+.buttons .button.disabled {
   background-color: gray;
 }
-.buttons li.disabled a {
+.buttons .button.disabled a {
   -webkit-filter: blur(1px);
   filter: blur(1px);
 }
-.buttons li a {
+
+.big-btn {
   display: block;
   width: 126px;
   word-wrap: break-word;
@@ -241,8 +245,58 @@ main footer {
   padding: 10px 5px;
 }
 
-.products {
-  overflow: auto;
+.extra-label {
+  display: none;
+  white-space: nowrap;
+}
+
+.extra-btn {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #ddd;
+  color: #111111;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.extra-btn:hover .extra-list {
+  display: block;
+}
+
+.extra-list {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 0;
+  background-color: #ddd;
+  -moz-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.37);
+  list-style: none;
+  font-size: 0.8em;
+  width: 136px;
+  margin: 0;
+  text-align: right;
+  padding: 0;
+  z-index: 5;
+}
+.extra-list li {
+  padding: 2px 0;
+  background-color: transparent;
+  -moz-transition: background-color 200ms;
+  -o-transition: background-color 200ms;
+  -webkit-transition: background-color 200ms;
+  transition: background-color 200ms;
+}
+.extra-list li:hover {
+  background-color: #ccc;
+}
+.extra-list a {
+  color: #111111;
+  padding: 5px;
 }
 
 .pizza, .category-5 {

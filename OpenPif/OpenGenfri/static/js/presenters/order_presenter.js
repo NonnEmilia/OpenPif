@@ -9,9 +9,9 @@
  * @params {PDFModel}   hPdfBill
  */
 function orderPresenter (hModel) {
-    var hMod = hModel,
+    var hMod              = hModel,
         /** @type {Object} */
-        ref = {
+        ref               = {
             /** @type {jQuery} */
             $Main              : $('main'),
             /** @type {jQuery} */
@@ -39,41 +39,44 @@ function orderPresenter (hModel) {
             /** @type {jQuery} */
             $Mask              : $('.mask'),
             /** @type {String} */
-            sTplBillCategory    : $('.billCategoryRow').html(),
+            sTplBillCategory   : $('.billCategoryRow').html(),
             /** @type {String} */
-            sTplBillItem        : $('.billItemRow').html(),
+            sTplBillItem       : $('.billItemRow').html(),
             /** @type {String} */
-            sTplBillNotes       : $('billItemNotes').html(),
+            sTplBillNotes      : $('billItemNotes').html(),
             /** @type {String} */
-            sTplBillSeparator   : $('billSeparatorRow').html()
+            sTplBillSeparator  : $('billSeparatorRow').html()
         },
         /** @type {HTMLAnchorElement} */
-        elPrintBtn          = document.getElementsByClassName('btn-print-bill')[0],
+        elPrintBtn        = document.getElementsByClassName('btn-print-bill')[0],
         /** @type {HTMLTableElement} */
-        elBillTable         = document.getElementsByClassName('billItems')[0],
+        elBillTable       = document.getElementsByClassName('billItems')[0],
         /** @type {HTMLTableCellElement} */
-        elBillTotal         = document.getElementsByClassName('billTotal')[0],
+        elBillTotal       = document.getElementsByClassName('billTotal')[0],
         /** @type {HTMLDivElement} */
-        elAlertPanel        = document.getElementsByClassName('alert-panel')[0],
+        elAlertPanel      = document.getElementsByClassName('alert-panel')[0],
         /** @type {HTMLDivElement} */
-        elAlertMessage      = document.getElementsByClassName('alert-message')[0],
+        elAlertMessage    = document.getElementsByClassName('alert-message')[0],
         /** @type {HTMLDivElement} */
-        elMask              = document.getElementsByClassName('mask')[0],
+        elMask            = document.getElementsByClassName('mask')[0],
         /** @type {String} */
-        sTplBillCategory    = document.getElementsByClassName('billCategoryRow')[0].innerHTML,
+        sTplBillCategory  = document.getElementsByClassName('billCategoryRow')[0].innerHTML,
         /** @type {String} */
-        sTplBillItem        = document.getElementsByClassName('billItemRow')[0].innerHTML,
+        sTplBillItem      = document.getElementsByClassName('billItemRow')[0].innerHTML,
         /** @type {String} */
-        sTplBillNotes       = document.getElementsByClassName('billItemNotes')[0].innerHTML,
+        sTplExtras        = document.getElementsByClassName('billItemExtras')[0].innerHTML,
         /** @type {String} */
-        sTplBillSeparator   = document.getElementsByClassName('billSeparatorRow')[0].innerHTML,
+        sTplBillNotes     = document.getElementsByClassName('billItemNotes')[0].innerHTML,
+        /** @type {String} */
+        sTplBillSeparator = document.getElementsByClassName('billSeparatorRow')[0].innerHTML,
 
-        fnAttachEvents = function () {
+        fnAttachEvents    = function () {
             hMod.on('addToBill', addToBill);
             hMod.on('refreshButtons', refreshButtons);
 
             ref.$CategoryContainer.on('click touch', 'a', onClickBtnCategory);
-            ref.$ProductsContainer.on('click touch', onClickBtnProduct);
+            ref.$ProductsContainer.on('click touch', ".big-btn", onClickBtnProduct);
+            // ref.$ProductsContainer.on('click touch', ".extra-list a", onClickBtnExtra);
             ref.$Aside.on('click touch', onClickMenu);
             ref.$Aside.on('keyup', onKeyupMenu);
             ref.$Main.on('dragstart', disableEvent);
@@ -88,22 +91,59 @@ function orderPresenter (hModel) {
         filterCategory(evt.target);
     }
 
+    /**
+     * @param {Event} evt
+     */
     function onClickBtnProduct (evt) {
         evt.preventDefault();
-        if (evt.target.tagName === 'A' && !evt.target.parentNode.classList.contains('disabled')) {
-            orderProduct(evt.target);
+        var $BtnProduct      = $(this),
+            $ButtonContainer = $BtnProduct.parents(".button");
+
+        if (!$ButtonContainer.hasClass("disabled")) {
+            // orderProduct(evt.target);
+            orderProduct($BtnProduct[0]);
         }
     }
 
+    function addExtraToProduct (el) {
+        var $Extra = $(el);
+
+        hMod.addExtraToProduct($Extra.data("product"), {
+            id    : $Extra.val(),
+            qty   : 1,// For now is always 1
+            name  : $.trim($Extra.parents("label").text()),
+            price : $Extra.data("price")
+        });
+    }
+
+    function removeExtraToProduct (el) {
+        var $Extra = $(el);
+
+        hMod.removeExtraToProduct($Extra.data("product"), {
+            id    : $Extra.val(),
+            name  : $.trim($Extra.parents("label").text()),
+            price : $Extra.data("price")
+        });
+    }
+
     function onClickMenu (evt) {
-        evt.preventDefault();
+        var $Target = $(evt.target);
         if (evt.target.tagName === 'A') {
+            evt.preventDefault();
+            // TODO: Delete this switch and port to jQuery (.on("...", ".add", onClickAdd))
             if (evt.target.classList.contains('add')) {
                 incrementProduct(evt.target);
             } else if (evt.target.classList.contains('remove')) {
                 decrementProduct(evt.target);
             } else if (evt.target === elPrintBtn) {
                 sendBill(evt.target);
+            }
+        } else if (evt.target.tagName === "INPUT" && $Target.hasClass("extra-input")) {
+
+            if ($Target.prop("checked") === true) {
+                addExtraToProduct(evt.target);
+            } else {
+                removeExtraToProduct(evt.target);
             }
         }
     }
@@ -152,17 +192,17 @@ function orderPresenter (hModel) {
      * @param {HTMLAnchorElement} elCategoryBtn The category button.
      */
     function filterCategory (elCategoryBtn) {
-        var $CategoryBtn = $(elCategoryBtn),
-            nId = parseInt($CategoryBtn.data('id'), 10),
-            $ToFilterButtons = $('.products .category-' + nId),
-            $AllItemButtons = $('.products li'),
+        var $CategoryBtn        = $(elCategoryBtn),
+            nId                 = parseInt($CategoryBtn.data('id'), 10),
+            $ToFilterButtons    = $('.products .category-' + nId),
+            $AllItemButtons     = $('.products li'),
             $AllCategoryButtons = $('.categories a');
 
         // Remove filter
         if ($CategoryBtn.hasClass('filtered')) {
             $AllCategoryButtons.removeClass('filtered');
             $AllItemButtons.show();
-        // Add filter
+            // Add filter
         } else {
             $AllCategoryButtons.removeClass('filtered');
             $CategoryBtn.addClass('filtered');
@@ -173,10 +213,10 @@ function orderPresenter (hModel) {
 
     /**
      * Order a product via it's button.
-     * @param {HTMLAnchorElement} elProductBtn The product button.
+     * @param {HTMLElement} elProductBtn The product button.
      */
     function orderProduct (elProductBtn) {
-        var nId    = parseInt(elProductBtn.dataset.id,       10),
+        var nId    = parseInt(elProductBtn.dataset.id, 10),
             nIdCat = parseInt(elProductBtn.dataset.category, 10);
 
         hMod.addProduct({
@@ -185,30 +225,29 @@ function orderPresenter (hModel) {
             name     : elProductBtn.innerHTML,
             qty      : 1,
             price    : parseFloat(elProductBtn.dataset.price),
-            notes    : ""
+            notes    : "",
+            extras   : {}
         });
     }
 
     /**
      * Increment a product amount via it's button.
-     * @param {HTMLAnchorElement} elProductBtn The product button.
+     * @param {HTMLElement} elProductBtn The product button.
      */
     function incrementProduct (elProductBtn) {
-        var nId = parseInt(elProductBtn.dataset.id, 10);
+        var hProd = $(elProductBtn).data("product");
 
-        hMod.incrementProduct({
-            id  : nId,
-            qty : 1
-        });
+        hMod.incrementProduct(hProd, 1);
     }
 
-    function decrementProduct (elButton) {
-        var nId = parseInt(elButton.dataset.id, 10);
+    /**
+     * Decrement a product amount via it's button.
+     * @param {HTMLElement} elProductBtn The product button.
+     */
+    function decrementProduct (elProductBtn) {
+        var hProd = $(elProductBtn).data("product");
 
-        hMod.decrementProduct({
-            id  : nId,
-            qty : 1
-        });
+        hMod.decrementProduct(hProd, 1);
     }
 
     function addNotesToProduct (elTextarea) {
@@ -229,17 +268,17 @@ function orderPresenter (hModel) {
      */
     function addToBill (hBill) {
         elBillTable.innerHTML = '';
-        var sHTMLRow,
-            hCat = hModel.getCategories(), 
-            i,
+        var hCat         = hModel.getCategories(),
+            aOrderedBill = orderBillByCategories(hBill.items),
+            billLen      = aOrderedBill.length,
+            elSeparator  = document.createElement('tr'),
+            nLastCategory,
+            sHTMLRow,
             hItem,
             elTr,
-            nLastCategory,
-            aOrderedBill = orderBillByCategories(hBill.items),
-            billLen = aOrderedBill.length,
-            elSeparator = document.createElement('tr');
+            i;
 
-        elSeparator.innerHTML =  riot.render(sTplBillSeparator);
+        elSeparator.innerHTML = riot.render(sTplBillSeparator);
 
         for (i = 0; i < billLen; i++) {
             hItem = aOrderedBill[i];
@@ -261,11 +300,21 @@ function orderPresenter (hModel) {
                 id     : hItem.id,
                 name   : hItem.name,
                 amount : hItem.qty,
-                price  : $.pif.formatPrice(hItem.qty * hItem.price)
+                price  : $.pif.formatPrice(getItemPrice(hItem))
             });
             elTr = document.createElement('tr');
-
             elTr.innerHTML = sHTMLRow;
+            $(".pif-button", elTr).data("product", hItem);
+            elBillTable.appendChild(elTr);
+
+            // Extras
+            elTr = document.createElement('tr');
+            elTr.innerHTML = riot.render(sTplExtras);
+            $(".extra-category-" + hItem.category, elTr).show();
+            $("input", elTr).data("product", hItem);
+            $.each(hItem.extras, function (sExtraName, hExtra) {
+                $("input[value=" + hExtra.id + "]", elTr).prop("checked", true);
+            });
             elBillTable.appendChild(elTr);
 
             //Notes
@@ -285,6 +334,16 @@ function orderPresenter (hModel) {
         elBillTotal.innerHTML = $.pif.formatPrice(hBill.total) + ' &euro;';
     }
 
+    function getItemPrice (hItem) {
+        var fExtraPrices = 0;
+
+        $.each(hItem.extras, function (sName, hExtra) {
+            fExtraPrices += hExtra.price;
+        });
+
+        return hItem.qty * (hItem.price + fExtraPrices);
+    }
+
     /**
      * Group the bill items by category.
      *
@@ -292,8 +351,8 @@ function orderPresenter (hModel) {
      */
     function orderBillByCategories (hItems) {
         var aResults = [],
-            nId,
-            aCat = hModel.getCategories();
+            aCat     = hModel.getCategories(),
+            nId;
 
         for (nId in hItems) {
             aResults.push(hItems[nId]);
@@ -301,7 +360,7 @@ function orderPresenter (hModel) {
         aResults.sort(function (hItem1, hItem2) {
             var nPriority1 = aCat[hItem1.category].priority,
                 nPriority2 = aCat[hItem2.category].priority,
-                nReturn = 0;
+                nReturn    = 0;
 
             if (nPriority1 < nPriority2) {
                 nReturn = -1;
@@ -322,7 +381,8 @@ function orderPresenter (hModel) {
     /**
      * Validate the server response after the bill is sent to it.
      * @param {Object} hResponse The response object.
-     * @param {Object} hResponse.errors      An object of articles with errors formatted as `{"Article_name" : max_quantity, ...}`.
+     * @param {Object} hResponse.errors      An object of articles with errors formatted as `{"Article_name" :
+     *     max_quantity, ...}`.
      * @param {Number} hResponse.bill_id     The bill ID.
      * @param {String} hResponse.customer_id The customer ID.
      * @param {String} hResponse.date        The bill timestamp.
@@ -336,7 +396,7 @@ function orderPresenter (hModel) {
             showAlert("<p>Il server non ha risposto correttamente</p>Ritenta o chiama un tecnico");
             return false;
         }
-        if (!hResponse.bill_id) {
+        if (!hResponse.bill_id && !hResponse.billid) {// TODO: Why 2 different bill IDs?
             var sName,
                 aTxtSupply = [];
 
@@ -366,7 +426,8 @@ function orderPresenter (hModel) {
         /**
          * Function that handle the AJAX response.
          * @param {Object} hResponse The response object.
-         * @param {Object} hResponse.errors      An object of articles with errors formatted as `{"Article_name" : max_quantity, ...}`.
+         * @param {Object} hResponse.errors      An object of articles with errors formatted as `{"Article_name" :
+         *     max_quantity, ...}`.
          * @param {Number} hResponse.bill_id     The bill ID.
          * @param {String} hResponse.customer_id The customer ID.
          * @param {String} hResponse.date        The bill timestamp.
@@ -374,15 +435,16 @@ function orderPresenter (hModel) {
          * @param {String} hResponse.pdf_url     The PDF url to print it.
          */
         var fnAjaxSuccess = function (hResponse) {
-                if (validateBillResponse(hResponse)) {
-                    var hPrintWindow = window.open(hResponse.pdf_url),
-                        isFirefox = typeof InstallTrigger !== 'undefined';   // Firefox 1.0+
-                    if (!isFirefox) {// Firefox PDF.js is buggy. Better to not trigger automatic print
-                        hPrintWindow.print();
-                    }
-                    window.location.reload();
+            if (validateBillResponse(hResponse)) {
+                var hPrintWindow = window.open(hResponse.pdf_url),
+                    isFirefox    = typeof InstallTrigger !== 'undefined';// Firefox 1.0+
+
+                if (!isFirefox) {// Firefox PDF.js is buggy. Better to not trigger automatic print
+                    hPrintWindow.print();
                 }
-            };
+                window.location.reload();
+            }
+        };
 
         hMod.commitBill(ref.$NameInput.val(), fnAjaxSuccess, function () {
             showAlert("<p>Errore di comunicazione col server</p>Ritenta o chiama un tecnico");
@@ -397,7 +459,7 @@ function orderPresenter (hModel) {
         var hCat = {};
         ref.$CategoryContainer.children().each(function (idx, elListItem) {
             var $Button = $('a', elListItem),
-                nId = parseInt($Button.data('id'), 10);
+                nId     = parseInt($Button.data('id'), 10);
             hCat[nId] = {
                 id       : nId,
                 name     : $Button.html(),
@@ -411,7 +473,7 @@ function orderPresenter (hModel) {
     function setUploadLoop () {
         return setInterval(function () {
             hMod.getUpdates();
-        }, 1000 * 1);
+        }, 1000);// 1 s
     }
 
     function refreshButtons (hItems) {
@@ -424,7 +486,10 @@ function orderPresenter (hModel) {
         for (sName in hItems) {
             aValues = hItems[sName];
             nQty = aValues[0];
-            $Button = $("[data-name='" + sName +"']");
+            $Button = $("[data-name='" + sName + "']");
+            if ($Button.length === 0) {
+                continue;
+            }
             elButton = $Button.get(0);
             if (nQty !== null && nQty <= 5) {
                 $Button.addClass('badge');
@@ -443,4 +508,4 @@ function orderPresenter (hModel) {
     setUploadLoop();
 }
 
-orderPresenter(new OrderModel());
+new orderPresenter(new OrderModel());
