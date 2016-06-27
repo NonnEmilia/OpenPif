@@ -37,8 +37,10 @@ def commit_bill(output, reqdata, user):
             # print r_billitem['name']
             item = items[r_billitem['name']]
             billitem, ok = _create_item(r_billitem, BillItem, item)
+            billitem_total = 0
             if ok:
-                bill.total += billitem.item_price * billitem.quantity
+                billitem_total += billitem.item_price  # * billitem.quantity
+                # print billitem.item.name, billitem.item_price
                 billitem.bill = bill
                 billitem.category = billitem.item.category
                 billitem.note = r_billitem['notes']
@@ -50,11 +52,15 @@ def commit_bill(output, reqdata, user):
                 item = items[r_extra]
                 extra, ok = _create_item(r_data, BillItemExtra, item)
                 if ok:
-                    bill.total += extra.item_price * extra.quantity
+                    billitem_total += extra.item_price * extra.quantity
+                    # print extra.item.name, extra.item_price * extra.quantity
                     extra.billitem = billitem
                     to_commit_extras.append(extra)
                 else:
                     errors.append((extra.item.name, extra.item.quantity))
+            bill.total += billitem_total * billitem.quantity
+            # print billitem.item.name, billitem.quantity
+            # print 'Total', bill.total
     except KeyError as e:
         raise FormatError('Missing key: {}'.format(str(e)))
     if errors:
