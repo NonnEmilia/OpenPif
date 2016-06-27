@@ -165,7 +165,9 @@ def pdf_view(request, bill_id):
     billitems = {}
     headeritems = {}
     for cat in categories:
-        itemlist = list(items.filter(category=cat))
+        itemlist = [
+                (i, i.billitemextra_set.all()) for i in items.filter(
+                    category=cat)]
         if itemlist:
             if cat.printable:
                 billitems[cat] = itemlist

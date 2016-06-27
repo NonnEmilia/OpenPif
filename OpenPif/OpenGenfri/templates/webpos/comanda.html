@@ -39,11 +39,19 @@
                 </tr>
              {% for item in v %}
             <tr>
-                <td class="qty">{{item.quantity}}</td>
-                <td class="description">{{item.item}}</td>
-                <td class="price">{{item.item_price}}</td>
-                <td class="price">{{item.total_cost}}</td>
+                <td class="qty">{{item.0.quantity}}</td>
+                <td class="description">{{item.0.item}}</td>
+                <td class="price">{{item.0.item_price}}</td>
+                <td class="price">{{item.0.total_cost}}</td>
             </tr>
+            {% for extra in item.1 %}
+             <tr>
+                 <td class="qty"><small>{{extra.quantity}}</small></td>
+                 <td class="description"><small>{{extra.item}}</small></td>
+                 <td class="price"><small>{{extra.item_price}}</small></td>
+                <td class="price"><small>{{extra.total_cost}}</small></td>
+            </tr>
+            {% endfor %}
             {% endfor %}
                 {% endfor %}
             </table>
@@ -72,10 +80,16 @@
                 </tr>
              {% for item in v %}
             <tr>
-                <td class="qty">{{item.quantity}}</td>
-                <td>{{item.item}}</td>
-                <td>{{item.note}}</td>
+                <td class="qty">{{item.0.quantity}}</td>
+                <td>{{item.0.item}}</td>
+                <td>{{item.0.note}}</td>
             </tr>
+            {% for extra in item.1 %}
+             <tr>
+                 <td class="qty"><small>{{extra.quantity}}</small></td>
+                 <td class="description"><small>{{extra.item}}</small></td>
+            </tr>
+            {% endfor %}
             {% endfor %}
             </table>
             <div> <pdf:nextpage /></div>
