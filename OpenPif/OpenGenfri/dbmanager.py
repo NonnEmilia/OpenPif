@@ -39,7 +39,7 @@ def commit_bill(output, reqdata, user):
             billitem, ok = _create_item(r_billitem, BillItem, item)
             billitem_total = 0
             if ok:
-                billitem_total += billitem.item_price  # * billitem.quantity
+                billitem_total += billitem.item_price
                 # print billitem.item.name, billitem.item_price
                 billitem.bill = bill
                 billitem.category = billitem.item.category

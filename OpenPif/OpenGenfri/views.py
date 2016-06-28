@@ -223,7 +223,7 @@ def report(request, *args):
                 total_cash += bill.total
                 for billitem in bill.billitem_set.all():
                     quantity = billitem.quantity
-                    price = billitem.total_cost
+                    price = billitem.item_price * billitem.quantity
                     entry_category = report_dict[billitem.category]
                     entry_category['items_sold'] += quantity
                     entry_category['total_price'] += abs(price)
@@ -232,6 +232,13 @@ def report(request, *args):
                     entry_item['price'] += abs(price)
                     if price > 0:
                         total_earn += price
+                    for extra in billitem.billitemextra_set.all():
+                        entry_category['items_sold'] += extra.quantity * billitem.quantity
+                        entry_category['total_price'] += extra.total_cost * billitem.quantity
+                        entry_item = entry_category['itemss'][extra.item]
+                        entry_item['quantity'] += extra.quantity * billitem.quantity
+                        entry_item['price'] += extra.total_cost * billitem.quantity
+                        total_earn += extra.total_cost * billitem.quantity
             return render(request, 'webpos/report.html',
                           {'form': form,
                            'report': report_dict,
