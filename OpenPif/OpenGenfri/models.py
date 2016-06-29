@@ -91,10 +91,10 @@ class BillItem(models.Model):
 
     @property
     def total_cost(self):
-        total = self.item_price
+        total = self.item_price * self.quantity
         for extra in self.billitemextra_set.all():
             total += extra.total_cost
-        return self.quantity * total
+        return total
 
 
 class BillItemExtra(models.Model):
@@ -106,4 +106,4 @@ class BillItemExtra(models.Model):
 
     @property
     def total_cost(self):
-        return self.quantity * self.item_price
+        return self.quantity * self.item_price * self.billitem.quantity

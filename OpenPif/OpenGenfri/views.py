@@ -241,11 +241,11 @@ def report(request, *args):
                         total_earn += price
                     for extra in billitem.billitemextra_set.all():
                         entry_category['items_sold'] += extra.quantity * billitem.quantity
-                        entry_category['total_price'] += extra.total_cost * billitem.quantity
+                        entry_category['total_price'] += extra.total_cost
                         entry_item = entry_category['itemss'][extra.item]
                         entry_item['quantity'] += extra.quantity * billitem.quantity
-                        entry_item['price'] += extra.total_cost * billitem.quantity
-                        total_earn += extra.total_cost * billitem.quantity
+                        entry_item['price'] += extra.total_cost
+                        total_earn += extra.total_cost
             return render(request, 'webpos/report.html',
                           {'form': form,
                            'report': report_dict,
