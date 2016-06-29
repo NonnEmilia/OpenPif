@@ -95,7 +95,7 @@ def refresh_buttons(request):
 #   "total": total
 # }
 
-# @transaction.atomic  (using select_for_update() in dbmanager)
+@transaction.atomic  # (using select_for_update() in dbmanager)
 @csrf_protect  # Daro: sarebbe figo integrare CSRF token in questa POST request
 def bill_handler(request):
     """Called in order to commit a bill. The POST request must pass a json
