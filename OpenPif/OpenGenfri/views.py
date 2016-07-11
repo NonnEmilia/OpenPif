@@ -31,7 +31,8 @@ def index(request):
         logger.info(
                 "User " + request.user.get_username() + " authenticated fine"
                 )
-        display_items = Item.objects.filter(enabled=True)
+        enabled_categories = Category.objects.filter(enabled=True)
+        display_items = Item.objects.filter(enabled=True, category__in=enabled_categories)
         server = User.objects.get(pk=request.user.id)
         return render(request, 'webpos/index.html', {'items': display_items,
                                                      'server': server
@@ -44,7 +45,7 @@ def index(request):
 def order(request):
     if request.user.is_authenticated():
         categories = Category.objects.filter(enabled=True).order_by('priority')
-        items = Item.objects.filter(enabled=True, extra=False).order_by('category',
+        items = Item.objects.filter(enabled=True, extra=False, category__in=categories).order_by('category',
                                                                         'priority',
                                                                         'name')
         for item in items:
@@ -73,8 +74,9 @@ def refresh_buttons(request):
     """
 
     if request.method == 'POST':  # and request.is_ajax():
+        enabled_categories = Category.objects.filter(enabled=True)
         items = dict([(item.name, (item.quantity, item.price))
-                      for item in Item.objects.filter(enabled=True)])
+                      for item in Item.objects.filter(enabled=True, category__in=enabled_categories)])
         return JsonResponse(items)
 
 
